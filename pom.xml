@@ -10,6 +10,7 @@
     <modules>
         <module>shop_utils</module>
         <module>shop_model</module>
+        <module>shop_core</module>
     </modules>
 
     <!--引入spring boot 版本依赖-->
