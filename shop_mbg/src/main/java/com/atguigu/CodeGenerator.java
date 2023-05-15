@@ -58,8 +58,8 @@ public class CodeGenerator {
         StrategyConfig strategy = new StrategyConfig();
 //        strategy.setInclude("base_brand");
 //        strategy.setInclude("base_category1","base_category2","base_category3","platform_property_key","platform_property_value");
-        strategy.setInclude("base_category1","base_category2","base_category3");
-//        strategy.setInclude("platform_property_key","platform_property_value");
+//        strategy.setInclude("base_category1","base_category2","base_category3");
+        strategy.setInclude("platform_property_key","platform_property_value");
 //        strategy.setInclude("product_spu","product_sale_property_key","product_sale_property_value","product_image","base_sale_property");
         //strategy.setInclude();
 //        strategy.setInclude("sku_info","sku_platform_property_value","sku_sale_property_value","sku_image");

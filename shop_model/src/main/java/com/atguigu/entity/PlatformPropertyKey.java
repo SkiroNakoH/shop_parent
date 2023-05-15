@@ -42,4 +42,7 @@ public class PlatformPropertyKey implements Serializable {
 
     @ApiModelProperty(value = "分类层级")
     private Integer categoryLevel;
+
+    @TableField(exist = false)
+    private List<PlatformPropertyValue> propertyValueList;
 }
