@@ -67,10 +67,10 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
         //删除
         LambdaQueryWrapper<PlatformPropertyValue> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PlatformPropertyValue::getPropertyKeyId, keyId);
-        List<PlatformPropertyValue> propertyValueList1 = platformPropertyValueService.list(queryWrapper);
+        List<PlatformPropertyValue> oldPropertyValueList = platformPropertyValueService.list(queryWrapper);
 
 //        propertyValueList1.removeAll(propertyValueList);
-        propertyValueList1.removeIf(i -> {
+        oldPropertyValueList.removeIf(i -> {
             for (PlatformPropertyValue propertyValue : propertyValueList) {
                 if (Objects.equals(propertyValue.getId(), i.getId()))
                     return true;
@@ -78,9 +78,9 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
             return false;
         });
 
-        if (!propertyValueList1.isEmpty()) {
+        if (!oldPropertyValueList.isEmpty()) {
             ArrayList<Long> idList = new ArrayList<>();
-            for (PlatformPropertyValue platformPropertyValue : propertyValueList1) {
+            for (PlatformPropertyValue platformPropertyValue : oldPropertyValueList) {
                 idList.add(platformPropertyValue.getId());
             }
             platformPropertyValueService.removeByIds(idList);
