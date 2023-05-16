@@ -68,10 +68,10 @@ public class BrandController {
         return RetVal.ok(brandList);
     }
 
-    //7.文件上传
+    //7.文件上传 fastdfs版本
     //7.http://127.0.0.1/product/brand/fileUpload
-    @PostMapping("/fileUpload")
-    public RetVal fileUpload1(MultipartFile file) throws Exception {
+    @PostMapping("/fileUploadByFastdfs")
+    public RetVal fileUploadByFastdfs(MultipartFile file) throws Exception {
         //需要一个配置文件告诉fastdfs在哪里
         String configFilePath = this.getClass().getResource("/tracker.conf").getFile();
         //初始化
@@ -93,4 +93,9 @@ public class BrandController {
         return RetVal.ok(filePath);
     }
 
+    @PostMapping("/fileUpload")
+    public RetVal fileUpload(MultipartFile file) throws Exception {
+
+        return RetVal.ok();
+    }
 }
