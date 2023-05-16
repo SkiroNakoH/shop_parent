@@ -9,6 +9,8 @@ import com.atguigu.service.BaseCategory1Service;
 import com.atguigu.service.BaseCategory2Service;
 import com.atguigu.service.BaseCategory3Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,7 @@ import java.util.List;
  * @since 2023-05-15
  */
 @CrossOrigin
+@Api(tags = "category分类接口")
 @RestController
 @RequestMapping("/product")
 public class BaseCategoryController {
@@ -33,6 +36,7 @@ public class BaseCategoryController {
     @Autowired
     private BaseCategory3Service baseCategory3Service;
 
+    @ApiOperation("查找一级分类")
     @GetMapping("/getCategory1")
     public RetVal getCategory1(){
 
@@ -40,6 +44,7 @@ public class BaseCategoryController {
         return RetVal.ok(baseCategory1List);
     }
 
+    @ApiOperation("根据一级分类查找二级分类")
     @GetMapping("/getCategory2/{category1Id}")
     public RetVal getCategory2(@PathVariable Long category1Id){
         LambdaQueryWrapper<BaseCategory2> queryWrapper = new LambdaQueryWrapper<>();
@@ -49,6 +54,7 @@ public class BaseCategoryController {
         return RetVal.ok(baseCategory2List);
     }
 
+    @ApiOperation("根据二级分类查找三级分类")
     @GetMapping("/getCategory3/{category2Id}")
     public RetVal getCategory3(@PathVariable Long category2Id){
         LambdaQueryWrapper<BaseCategory3> queryWrapper = new LambdaQueryWrapper<>();

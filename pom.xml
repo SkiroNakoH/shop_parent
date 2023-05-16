@@ -36,6 +36,7 @@
         <fastdfs.version>1.27.0.0</fastdfs.version>
         <lombok.version>1.18.10</lombok.version>
         <shardingsphere.version>5.1.0</shardingsphere.version>
+        <knife4j.version>4.0.0</knife4j.version>
     </properties>
     <!--配置dependencyManagement锁定依赖的版本 并不是实际的依赖。-->
     <dependencyManagement>
@@ -103,6 +104,13 @@
                 <groupId>org.apache.shardingsphere</groupId>
                 <artifactId>shardingsphere-jdbc-core-spring-boot-starter</artifactId>
                 <version>${shardingsphere.version}</version>
+            </dependency>
+
+            <!--引入Knife4j的官方start包,该指南选择Spring Boot版本<3.0,开发者需要注意-->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
