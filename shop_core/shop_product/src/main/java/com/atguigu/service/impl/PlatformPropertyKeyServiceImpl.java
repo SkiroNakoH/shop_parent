@@ -57,7 +57,7 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
     @Transactional
     @Override
     public void savePlatformProperty(PlatformPropertyKey platformPropertyKey) {
-        //新增、修改
+        //新增、修改 key
 //        if (platformPropertyKey.getId() == null || platformPropertyKey.getId() == 0)
         saveOrUpdate(platformPropertyKey);
 
@@ -86,6 +86,7 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
             platformPropertyValueService.removeByIds(idList);
         }
 
+        //新增、修改 value
         if (!propertyValueList.isEmpty()) {
             //修改
             for (PlatformPropertyValue propertyValue : propertyValueList) {
