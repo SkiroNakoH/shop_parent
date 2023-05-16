@@ -31,3 +31,14 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+#自定义配置类
+minio:
+  endpoint: http://192.168.112.128:9000
+  accessKey: enjoy6288
+  secretKey: enjoy6288
+  bucketName: godhand

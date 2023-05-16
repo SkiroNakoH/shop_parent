@@ -3,6 +3,7 @@ package com.atguigu.controller;
 import com.atguigu.entity.BaseBrand;
 import com.atguigu.result.RetVal;
 import com.atguigu.service.BaseBrandService;
+import com.atguigu.utils.MinioUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.io.FilenameUtils;
@@ -21,6 +22,8 @@ import java.util.List;
 public class BrandController {
     @Autowired
     private BaseBrandService brandService;
+    @Autowired
+    private MinioUtil minioUtil;
 
     //1.分页查询
     @GetMapping("/queryBrandByPage/{pageNum}/{pageSize}")
@@ -95,7 +98,6 @@ public class BrandController {
 
     @PostMapping("/fileUpload")
     public RetVal fileUpload(MultipartFile file) throws Exception {
-
-        return RetVal.ok();
+        return RetVal.ok( minioUtil.upload(file));
     }
 }
