@@ -5,12 +5,18 @@ import com.atguigu.entity.PlatformPropertyValue;
 import com.atguigu.mapper.PlatformPropertyKeyMapper;
 import com.atguigu.service.PlatformPropertyKeyService;
 import com.atguigu.service.PlatformPropertyValueService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -51,14 +57,42 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
     @Transactional
     @Override
     public void savePlatformProperty(PlatformPropertyKey platformPropertyKey) {
+        //新增、修改
 //        if (platformPropertyKey.getId() == null || platformPropertyKey.getId() == 0)
         saveOrUpdate(platformPropertyKey);
 
+        Long keyId = platformPropertyKey.getId();
         List<PlatformPropertyValue> propertyValueList = platformPropertyKey.getPropertyValueList();
-        for (PlatformPropertyValue propertyValue : propertyValueList) {
-            propertyValue.setPropertyKeyId(platformPropertyKey.getId());
-        }
-        platformPropertyValueService.saveOrUpdateBatch(propertyValueList);
 
+        //删除
+        LambdaQueryWrapper<PlatformPropertyValue> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PlatformPropertyValue::getPropertyKeyId, keyId);
+        List<PlatformPropertyValue> propertyValueList1 = platformPropertyValueService.list(queryWrapper);
+
+//        propertyValueList1.removeAll(propertyValueList);
+        propertyValueList1.removeIf(i -> {
+            for (PlatformPropertyValue propertyValue : propertyValueList) {
+                if (Objects.equals(propertyValue.getId(), i.getId()))
+                    return true;
+            }
+            return false;
+        });
+
+        if (!propertyValueList1.isEmpty()) {
+            ArrayList<Long> idList = new ArrayList<>();
+            for (PlatformPropertyValue platformPropertyValue : propertyValueList1) {
+                idList.add(platformPropertyValue.getId());
+            }
+            platformPropertyValueService.removeByIds(idList);
+        }
+
+        if (!propertyValueList.isEmpty()) {
+            //修改
+            for (PlatformPropertyValue propertyValue : propertyValueList) {
+                propertyValue.setPropertyKeyId(keyId);
+            }
+            platformPropertyValueService.saveOrUpdateBatch(propertyValueList);
+
+        }
     }
 }
