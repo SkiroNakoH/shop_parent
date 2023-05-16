@@ -24,7 +24,7 @@ import java.util.List;
  * @author SkiroNakoH
  * @since 2023-05-15
  */
-@CrossOrigin
+//@CrossOrigin
 @Api(tags = "category分类接口")
 @RestController
 @RequestMapping("/product")

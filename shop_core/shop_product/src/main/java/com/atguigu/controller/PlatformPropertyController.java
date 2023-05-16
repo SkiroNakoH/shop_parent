@@ -22,7 +22,7 @@ import java.util.List;
  * @author SkiroNakoH
  * @since 2023-05-15
  */
-@CrossOrigin
+//@CrossOrigin
 @RestController
 @Api(tags = "商品平台属性接口")
 @RequestMapping("/product")
