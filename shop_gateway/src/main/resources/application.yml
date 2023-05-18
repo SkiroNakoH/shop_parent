@@ -19,6 +19,10 @@ spring:
           uri: lb://shop-product
           predicates:
             - Path=/product/**
+        - id: shop-web
+          uri: lb://shop-web
+          predicates:
+            - Host=*.gmall.com,127.0.0.1
       globalcors:
         cors-configurations:
           '[/**]':
