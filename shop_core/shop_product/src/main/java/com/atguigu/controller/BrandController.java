@@ -34,7 +34,7 @@ public class BrandController {
     public RetVal queryBrandByPage(@PathVariable Integer pageNum,
                                    @PathVariable Integer pageSize) {
         Page<BaseBrand> page = new Page<>(pageNum,pageSize);
-        brandService.page(page,new QueryWrapper<>());
+        brandService.page(page,null);
 
         return RetVal.ok(page);
     }
