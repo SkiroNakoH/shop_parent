@@ -5,6 +5,7 @@ import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.ProductSalePropertyValue;
 import com.atguigu.entity.ProductSpu;
 import com.atguigu.mapper.ProductSpuMapper;
+import com.atguigu.service.ProductImageService;
 import com.atguigu.service.ProductSalePropertyKeyService;
 import com.atguigu.service.ProductSalePropertyValueService;
 import com.atguigu.service.ProductSpuService;
@@ -30,6 +31,8 @@ public class ProductSpuServiceImpl extends ServiceImpl<ProductSpuMapper, Product
     private ProductSalePropertyKeyService propertyKeyService;
     @Autowired
     private ProductSalePropertyValueService propertyValueService;
+    @Autowired
+    private ProductImageService productImageService;
 
     @Transactional
     @Override
@@ -45,6 +48,7 @@ public class ProductSpuServiceImpl extends ServiceImpl<ProductSpuMapper, Product
             for (ProductImage productImage : productImageList) {
                 productImage.setProductId(spuId);
             }
+            productImageService.saveBatch(productImageList);
         }
 
         //保存销售商品的key
