@@ -6,6 +6,8 @@ import com.atguigu.service.BaseBrandService;
 import com.atguigu.utils.MinioUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.io.FilenameUtils;
 import org.csource.fastdfs.ClientGlobal;
 import org.csource.fastdfs.StorageClient1;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Api(tags = "品牌接口")
 @RestController
 @RequestMapping("/product/brand")
 public class BrandController {
@@ -26,6 +29,7 @@ public class BrandController {
     private MinioUtil minioUtil;
 
     //1.分页查询
+    @ApiOperation("分页查询品牌信息")
     @GetMapping("/queryBrandByPage/{pageNum}/{pageSize}")
     public RetVal queryBrandByPage(@PathVariable Integer pageNum,
                                    @PathVariable Integer pageSize) {
@@ -36,6 +40,7 @@ public class BrandController {
     }
 
     //2.添加品牌
+    @ApiOperation("添加品牌")
     @PostMapping
     public RetVal saveBrand(@RequestBody BaseBrand brand) {
         brandService.save(brand);
