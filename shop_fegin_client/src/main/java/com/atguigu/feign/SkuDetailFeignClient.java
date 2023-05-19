@@ -1,9 +1,11 @@
-package com.atguigu;
+package com.atguigu.feign;
 
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.SkuInfo;
+import com.atguigu.fallback.SkuDetailFallBackService;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -11,7 +13,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient("shop-product")
+@Component
+@FeignClient(value = "shop-product",fallback = SkuDetailFallBackService.class)
 public interface SkuDetailFeignClient {
     //1.获取商品基本信息，包括商品图片
     @GetMapping("/sku/getSkuInfo/{skuId}")

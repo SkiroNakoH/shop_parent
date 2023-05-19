@@ -27,3 +27,5 @@ feign:
       default:
         readTimeout: 30000
         connectTimeout: 10000
+  hystrix:
+    enabled: true

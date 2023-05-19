@@ -1,7 +1,7 @@
 package com.atguigu.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.atguigu.SkuDetailFeignClient;
+import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.SkuInfo;
