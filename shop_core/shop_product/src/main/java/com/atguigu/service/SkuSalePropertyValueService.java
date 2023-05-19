@@ -3,6 +3,8 @@ package com.atguigu.service;
 import com.atguigu.entity.SkuSalePropertyValue;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Map;
+
 /**
  * <p>
  * sku销售属性值 服务类
@@ -13,4 +15,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface SkuSalePropertyValueService extends IService<SkuSalePropertyValue> {
 
+    Map getSalePropertyAndSkuMapping(Long productId);
 }

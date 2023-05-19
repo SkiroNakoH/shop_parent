@@ -62,8 +62,8 @@ public class CodeGenerator {
 //        strategy.setInclude("platform_property_key","platform_property_value");
 //        strategy.setInclude("product_spu","product_sale_property_key","product_sale_property_value","product_image","base_sale_property");
         //strategy.setInclude();
-        strategy.setInclude("sku_info","sku_platform_property_value","sku_sale_property_value","sku_image");
-//        strategy.setInclude("base_category_view");
+//        strategy.setInclude("sku_info","sku_platform_property_value","sku_sale_property_value","sku_image");
+        strategy.setInclude("base_category_view");
 //        strategy.setInclude("user_info","user_address");
 //        strategy.setInclude("cart_info");
         //strategy.setInclude("order_detail","order_info");

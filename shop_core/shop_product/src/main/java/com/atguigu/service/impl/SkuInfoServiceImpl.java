@@ -9,6 +9,7 @@ import com.atguigu.service.SkuImageService;
 import com.atguigu.service.SkuInfoService;
 import com.atguigu.service.SkuPlatformPropertyValueService;
 import com.atguigu.service.SkuSalePropertyValueService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,5 +71,17 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
             }
             skuImageService.saveBatch(skuImageList);
         }
+    }
+
+    @Override
+    public SkuInfo getSkuInfo(Long skuId) {
+        SkuInfo skuInfo = getById(skuId);
+
+        LambdaQueryWrapper<SkuImage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SkuImage::getSkuId,skuId);
+        List<SkuImage> skuImageList = skuImageService.list(queryWrapper);
+
+        skuInfo.setSkuImageList(skuImageList);
+        return skuInfo;
     }
 }

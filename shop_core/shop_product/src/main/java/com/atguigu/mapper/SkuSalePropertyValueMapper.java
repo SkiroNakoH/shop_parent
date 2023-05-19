@@ -2,6 +2,10 @@ package com.atguigu.mapper;
 
 import com.atguigu.entity.SkuSalePropertyValue;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -13,4 +17,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface SkuSalePropertyValueMapper extends BaseMapper<SkuSalePropertyValue> {
 
+    List<Map> getSalePropertyAndSkuMapping(@Param("productId") Long productId);
 }

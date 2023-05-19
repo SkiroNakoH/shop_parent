@@ -23,4 +23,24 @@
                                 and a.sale_property_key_id = b.sale_property_key_id
         where a.product_id = #{productId}
     </select>
+
+    <select id="getSpuSalePropertyList" resultMap="salePropertyMap">
+        SELECT
+            a.id,
+            a.sale_property_key_name,
+            b.id property_value_id,
+            b.sale_property_value_name,
+            if(c.id is null , '0', '1') is_selected
+        FROM
+            product_sale_property_key a
+                INNER JOIN product_sale_property_value b ON a.product_id = b.product_id
+                AND a.sale_property_key_id = b.sale_property_key_id
+                LEFT JOIN sku_sale_property_value c ON c.sale_property_value_id = b.id
+                AND c.sku_id = #{skuId}
+        WHERE
+            a.product_id = #{productId}
+        ORDER BY
+            a.sale_property_key_id,
+            b.id
+    </select>
 </mapper>
