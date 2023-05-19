@@ -1,5 +1,6 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.SkuImage;
 import com.atguigu.entity.SkuInfo;
 import com.atguigu.entity.SkuPlatformPropertyValue;
@@ -12,11 +13,16 @@ import com.atguigu.service.SkuSalePropertyValueService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisCommand;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -34,6 +40,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     private SkuSalePropertyValueService skuSalePropertyValueService;
     @Autowired
     private SkuImageService skuImageService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Transactional
     @Override
@@ -75,10 +83,33 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
+        return getInfoFromRedis(skuId);
+    }
+
+    private SkuInfo getInfoFromRedis(Long skuId) {
+        //拼接redis存取key
+        String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
+
+        SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
+        if (Objects.isNull(skuInfo)) {
+            //从DB中取值
+            skuInfo = getInfoFromDB(skuId);
+
+            //设置redis中key的编码方式
+//            redisTemplate.setKeySerializer(StringRedisSerializer.UTF_8);
+
+            //存入redis
+            redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
+        }
+
+        return skuInfo;
+    }
+
+    private SkuInfo getInfoFromDB(Long skuId) {
         SkuInfo skuInfo = getById(skuId);
 
         LambdaQueryWrapper<SkuImage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SkuImage::getSkuId,skuId);
+        queryWrapper.eq(SkuImage::getSkuId, skuId);
         List<SkuImage> skuImageList = skuImageService.list(queryWrapper);
 
         skuInfo.setSkuImageList(skuImageList);
