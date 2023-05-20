@@ -17,40 +17,40 @@ import java.util.Map;
 public class SkuDetailFallBackService  implements SkuDetailFeignClient {
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
-        SkuInfo skuInfo = new SkuInfo();
+    /*    SkuInfo skuInfo = new SkuInfo();
         skuInfo.setSkuDesc("当前SkuInfo服务出错，请稍后重试 getSkuInfo, (┬＿┬)");
         //防止controller获取参数时报错
         skuInfo.setProductId(0L);
-        skuInfo.setCategory3Id(0L);
-        return skuInfo;
+        skuInfo.setCategory3Id(0L);*/
+        return null;
     }
 
     @Override
     public BaseCategoryView getCategoryView(Long categroy3Id) {
-        BaseCategoryView baseCategoryView = new BaseCategoryView();
-        baseCategoryView.setCategory1Name("当前CategoryView服务出错，请稍后重试 getCategoryView, (┬＿┬)");
-        return baseCategoryView;
+       /* BaseCategoryView baseCategoryView = new BaseCategoryView();
+        baseCategoryView.setCategory1Name("当前CategoryView服务出错，请稍后重试 getCategoryView, (┬＿┬)");*/
+        return null;
     }
 
     @Override
     public BigDecimal getPrice(Long skuId) {
-        return new BigDecimal(0);
+        return null;
     }
 
     @Override
     public Map getSalePropertyAndSkuMapping(Long productId) {
-        Map<Object, Object> map = new HashMap<>();
-        map.put("fallback","当前Mapping服务出错，请稍后重试  getSalePropertyAndSkuMapping, (┬＿┬)");
-        return map;
+      /*  Map<Object, Object> map = new HashMap<>();
+        map.put("fallback","当前Mapping服务出错，请稍后重试  getSalePropertyAndSkuMapping, (┬＿┬)");*/
+        return null;
     }
 
     @Override
     public List<ProductSalePropertyKey> getSpuSalePropertyList(Long productId, Long skuId) {
-        List<ProductSalePropertyKey> list = new ArrayList<>();
+    /*    List<ProductSalePropertyKey> list = new ArrayList<>();
         ProductSalePropertyKey propertyKey = new ProductSalePropertyKey();
         propertyKey.setSalePropertyKeyName("当前PropertyList服务出错，请稍后重试 getSpuSalePropertyList, (┬＿┬)");
 
-        list.add(propertyKey);
-        return list;
+        list.add(propertyKey);*/
+        return null;
     }
 }
