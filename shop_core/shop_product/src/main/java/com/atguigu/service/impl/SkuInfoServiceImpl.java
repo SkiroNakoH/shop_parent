@@ -15,13 +15,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisCommand;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -84,6 +85,69 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
         return getInfoFromRedis(skuId);
+    }
+
+    Map<Object, String> map = new HashMap<>();
+    public SkuInfo getInfoFromSafeRedis(Long skuId)  {
+        String token = map.get(Thread.currentThread());
+        boolean accquireLock = false;
+
+        if (StringUtils.isEmpty(token)) {
+            accquireLock = true;
+        } else {
+            token = UUID.randomUUID().toString();
+            //尝试拿锁
+            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+        }
+        if (accquireLock) {
+            //拼接redis存取key
+            String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
+
+            SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
+            if (Objects.isNull(skuInfo)) {
+                //从DB中取值
+                skuInfo = getInfoFromDB(skuId);
+
+                //设置redis中key的编码方式
+//            redisTemplate.setKeySerializer(StringRedisSerializer.UTF_8);
+
+                //存入redis
+                redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
+            }
+
+
+            //删除锁
+            String luaScript = "if " +
+                    "redis.call('get', KEYS[1]) == ARGV[1] " +
+                    "then " +
+                    "return redis.call('del', KEYS[1]) " +
+                    "else " +
+                    "return 0 end";
+            DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+            //把脚本放到redisScript中
+            redisScript.setScriptText(luaScript);
+            //设置脚本返回数据类型
+            redisScript.setResultType(Long.class);
+            redisTemplate.execute(redisScript, Arrays.asList("lock"), token);
+
+            return skuInfo;
+        } else {
+            for (; ; ) {
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+                if (retryLock) {
+                    map.put(Thread.currentThread(), token);
+                    break;
+                }
+            }
+            return getInfoFromSafeRedis(skuId);
+        }
     }
 
     private SkuInfo getInfoFromRedis(Long skuId) {
