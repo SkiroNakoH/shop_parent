@@ -5,6 +5,7 @@ import com.atguigu.entity.SkuImage;
 import com.atguigu.entity.SkuInfo;
 import com.atguigu.entity.SkuPlatformPropertyValue;
 import com.atguigu.entity.SkuSalePropertyValue;
+import com.atguigu.exception.SleepUtils;
 import com.atguigu.mapper.SkuInfoMapper;
 import com.atguigu.service.SkuImageService;
 import com.atguigu.service.SkuInfoService;
@@ -87,9 +88,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         return getInfoFromRedis(skuId);
     }
 
-    Map<Object, String> map = new HashMap<>();
+    ThreadLocal<String> threadLocal = new ThreadLocal();
     public SkuInfo getInfoFromSafeRedis(Long skuId)  {
-        String token = map.get(Thread.currentThread());
+        String token = threadLocal.get();
         boolean accquireLock = false;
 
         if (StringUtils.isEmpty(token)) {
@@ -97,9 +98,21 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         } else {
             token = UUID.randomUUID().toString();
             //尝试拿锁
-            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         }
         if (accquireLock) {
+            //给锁续期
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
+
             //拼接redis存取key
             String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
 
@@ -140,9 +153,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
                     throw new RuntimeException(e);
                 }
 
-                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
                 if (retryLock) {
-                    map.put(Thread.currentThread(), token);
+                    threadLocal.set(token);
                     break;
                 }
             }

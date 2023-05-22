@@ -1,5 +1,6 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.exception.SleepUtils;
 import com.atguigu.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -46,12 +47,22 @@ public class RedisServiceImpl implements RedisService {
     }
 
     //由于锁的有效期与业务有效期不一致，当业务还在进行时，锁过期，会导致锁资源提前被释放，让其他业务拿到锁资源
-    //加上uuid唯一标识进行识别
+    //给锁续时，加上uuid唯一标识进行识别
 //    @Override
     public void setNum4() {
         //尝试拿锁
-        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", "ok", 3, TimeUnit.HOURS);
+        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", "ok", 3, TimeUnit.SECONDS);
         if (lock) {
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             redisTemplate.delete("lock");
@@ -67,8 +78,18 @@ public class RedisServiceImpl implements RedisService {
     public void setNum5() {
         String token = UUID.randomUUID().toString();
         //尝试拿锁
-        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         if (lock) {
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             String redisToken = (String) redisTemplate.opsForValue().get("lock");
@@ -86,8 +107,18 @@ public class RedisServiceImpl implements RedisService {
     public void setNum6() {
         String token = UUID.randomUUID().toString();
         //尝试拿锁
-        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         if (lock) {
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             String luaScript = "if " +
@@ -115,8 +146,18 @@ public class RedisServiceImpl implements RedisService {
     public void setNum8() {
         String token = UUID.randomUUID().toString();
         //尝试拿锁
-        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+        boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         if (lock) {
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             String luaScript = "if " +
@@ -134,7 +175,7 @@ public class RedisServiceImpl implements RedisService {
 
         } else {
             for (; ; ) {
-                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
                 if (retryLock)
                     break;
             }
@@ -145,8 +186,9 @@ public class RedisServiceImpl implements RedisService {
     //执行lua脚本时，token对象不一样,导致锁无法被释放
     //将token做完map的value传递
     Map<Object, Boolean> map1 = new HashMap<>();
-//    @Override
-    public void setNum9()  {
+
+    //    @Override
+    public void setNum9() {
         Boolean flag = map1.get(Thread.currentThread());
         boolean accquireLock = false;
         String token = null;
@@ -156,9 +198,19 @@ public class RedisServiceImpl implements RedisService {
         } else {
             token = UUID.randomUUID().toString();
             //尝试拿锁
-            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         }
         if (accquireLock) {
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             String luaScript = "if " +
@@ -183,7 +235,7 @@ public class RedisServiceImpl implements RedisService {
                     throw new RuntimeException(e);
                 }
 
-                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
                 if (retryLock) {
                     map1.put(Thread.currentThread(), true);
                     break;
@@ -194,8 +246,9 @@ public class RedisServiceImpl implements RedisService {
     }
 
     Map<Object, String> map = new HashMap<>();
-    @Override
-    public void setNum()  {
+
+    //    @Override
+    public void setNum10() {
         String token = map.get(Thread.currentThread());
         boolean accquireLock = false;
 
@@ -204,9 +257,20 @@ public class RedisServiceImpl implements RedisService {
         } else {
             token = UUID.randomUUID().toString();
             //尝试拿锁
-            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
         }
         if (accquireLock) {
+            //给锁续期
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
             doBusiness();
             //删除锁
             String luaScript = "if " +
@@ -222,6 +286,7 @@ public class RedisServiceImpl implements RedisService {
             redisScript.setResultType(Long.class);
             redisTemplate.execute(redisScript, Arrays.asList("lock"), token);
 
+            map.clear();
         } else {
             for (; ; ) {
 
@@ -231,9 +296,71 @@ public class RedisServiceImpl implements RedisService {
                     throw new RuntimeException(e);
                 }
 
-                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.HOURS);
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
                 if (retryLock) {
                     map.put(Thread.currentThread(), token);
+                    break;
+                }
+            }
+            setNum();
+        }
+    }
+
+    //map改threadLocal
+    ThreadLocal<String> threadLocal = new ThreadLocal();
+
+    @Override
+    public void setNum() {
+        String token = threadLocal.get();
+        boolean accquireLock = false;
+
+        if (StringUtils.isEmpty(token)) {
+            accquireLock = true;
+        } else {
+            token = UUID.randomUUID().toString();
+            //尝试拿锁
+            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
+        }
+        if (accquireLock) {
+            //给锁续期
+            Thread thread = new Thread(() -> {
+                for (; ; ) {
+                    SleepUtils.sleep(3);
+                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                    System.out.println("续期成功");
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+
+            doBusiness();
+            //删除锁
+            String luaScript = "if " +
+                    "redis.call('get', KEYS[1]) == ARGV[1] " +
+                    "then " +
+                    "return redis.call('del', KEYS[1]) " +
+                    "else " +
+                    "return 0 end";
+            DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+            //把脚本放到redisScript中
+            redisScript.setScriptText(luaScript);
+            //设置脚本返回数据类型
+            redisScript.setResultType(Long.class);
+            redisTemplate.execute(redisScript, Arrays.asList("lock"), token);
+
+            threadLocal.remove();
+        } else {
+            for (; ; ) {
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
+                if (retryLock) {
+                    threadLocal.set(token);
                     break;
                 }
             }
