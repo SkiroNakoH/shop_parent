@@ -13,6 +13,8 @@ import com.atguigu.service.SkuPlatformPropertyValueService;
 import com.atguigu.service.SkuSalePropertyValueService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisCommand;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -85,8 +87,34 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
-        return getInfoFromSafeRedis(skuId);
+        return getInfoFromRedisson(skuId);
     }
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    public SkuInfo getInfoFromRedisson(Long skuId) {
+        //拼接redis存取key
+        String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
+
+        SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
+        if (Objects.isNull(skuInfo)) {
+            RLock lock = redissonClient.getLock("lock");
+            try {
+                lock.lock();
+                //从DB中取值
+                skuInfo = getInfoFromDB(skuId);
+
+                //存入redis
+                redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        return skuInfo;
+    }
+
 
     ThreadLocal<String> threadLocal = new ThreadLocal();
 
