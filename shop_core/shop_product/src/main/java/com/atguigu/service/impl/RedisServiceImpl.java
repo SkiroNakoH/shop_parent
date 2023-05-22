@@ -2,6 +2,8 @@ package com.atguigu.service.impl;
 
 import com.atguigu.exception.SleepUtils;
 import com.atguigu.service.RedisService;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -309,7 +311,7 @@ public class RedisServiceImpl implements RedisService {
     //map改threadLocal
     ThreadLocal<String> threadLocal = new ThreadLocal();
 
-    @Override
+   /* @Override
     public void setNum() {
         String token = threadLocal.get();
         boolean accquireLock = false;
@@ -366,6 +368,17 @@ public class RedisServiceImpl implements RedisService {
             }
             setNum();
         }
+    }*/
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Override
+    public void setNum(){
+        RLock lock = redissonClient.getLock("lock");
+        lock.lock();
+        doBusiness();
+        lock.unlock();
     }
 
     private void doBusiness() {
