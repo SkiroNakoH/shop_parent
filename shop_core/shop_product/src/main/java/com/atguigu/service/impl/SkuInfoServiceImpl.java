@@ -13,6 +13,7 @@ import com.atguigu.service.SkuPlatformPropertyValueService;
 import com.atguigu.service.SkuSalePropertyValueService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,23 +93,30 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Autowired
     private RedissonClient redissonClient;
+    @Autowired
+    private RBloomFilter skuBloomFilter;
 
     public SkuInfo getInfoFromRedisson(Long skuId) {
         //拼接redis存取key
         String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
 
         SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
+        //判断是否要从数据库中查找
         if (Objects.isNull(skuInfo)) {
-            RLock lock = redissonClient.getLock("lock");
-            try {
-                lock.lock();
-                //从DB中取值
-                skuInfo = getInfoFromDB(skuId);
+            //判断skuid是否在布隆过滤器中
+            if (skuBloomFilter.contains(skuId)) {
+                //分布式锁保证线程安全
+                RLock lock = redissonClient.getLock("lock");
+                try {
+                    lock.lock();
+                    //从DB中取值
+                    skuInfo = getInfoFromDB(skuId);
 
-                //存入redis
-                redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
-            } finally {
-                lock.unlock();
+                    //存入redis
+                    redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
+                } finally {
+                    lock.unlock();
+                }
             }
         }
 
