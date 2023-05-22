@@ -85,82 +85,83 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
-        return getInfoFromRedis(skuId);
+        return getInfoFromSafeRedis(skuId);
     }
 
     ThreadLocal<String> threadLocal = new ThreadLocal();
-    public SkuInfo getInfoFromSafeRedis(Long skuId)  {
-        String token = threadLocal.get();
-        boolean accquireLock = false;
 
-        if (StringUtils.isEmpty(token)) {
-            accquireLock = true;
-        } else {
-            token = UUID.randomUUID().toString();
-            //尝试拿锁
-            accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
-        }
-        if (accquireLock) {
-            //给锁续期
-            Thread thread = new Thread(() -> {
-                for (; ; ) {
-                    SleepUtils.sleep(3);
-                    redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
-                    System.out.println("续期成功");
-                }
-            });
-            thread.setDaemon(true);
-            thread.start();
+    public SkuInfo getInfoFromSafeRedis(Long skuId) {
 
+        //拼接redis存取key
+        String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
 
-            //拼接redis存取key
-            String keyString = RedisConst.SKUKEY_PREFIX + skuId + RedisConst.SKUKEY_SUFFIX;
+        SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
+        if (Objects.isNull(skuInfo)) {
+            String token = threadLocal.get();
+            boolean accquireLock = false;
 
-            SkuInfo skuInfo = (SkuInfo) redisTemplate.opsForValue().get(keyString);
-            if (Objects.isNull(skuInfo)) {
+            if (StringUtils.isEmpty(token)) {
+                accquireLock = true;
+            } else {
+                token = UUID.randomUUID().toString();
+                //尝试拿锁
+                accquireLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
+            }
+            if (accquireLock) {
+                //给锁续期
+                Thread thread = new Thread(() -> {
+                    for (; ; ) {
+                        SleepUtils.sleep(3);
+                        redisTemplate.expire("lock", 10, TimeUnit.SECONDS);
+                        System.out.println("续期成功");
+                    }
+                });
+                thread.setDaemon(true);
+                thread.start();
+
                 //从DB中取值
                 skuInfo = getInfoFromDB(skuId);
 
-                //设置redis中key的编码方式
-//            redisTemplate.setKeySerializer(StringRedisSerializer.UTF_8);
-
                 //存入redis
                 redisTemplate.opsForValue().set(keyString, skuInfo, RedisConst.SKUKEY_TIMEOUT, TimeUnit.SECONDS);
-            }
 
 
-            //删除锁
-            String luaScript = "if " +
-                    "redis.call('get', KEYS[1]) == ARGV[1] " +
-                    "then " +
-                    "return redis.call('del', KEYS[1]) " +
-                    "else " +
-                    "return 0 end";
-            DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-            //把脚本放到redisScript中
-            redisScript.setScriptText(luaScript);
-            //设置脚本返回数据类型
-            redisScript.setResultType(Long.class);
-            redisTemplate.execute(redisScript, Arrays.asList("lock"), token);
+                //删除锁
+                String luaScript = "if " +
+                        "redis.call('get', KEYS[1]) == ARGV[1] " +
+                        "then " +
+                        "return redis.call('del', KEYS[1]) " +
+                        "else " +
+                        "return 0 end";
+                DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+                //把脚本放到redisScript中
+                redisScript.setScriptText(luaScript);
+                //设置脚本返回数据类型
+                redisScript.setResultType(Long.class);
+                redisTemplate.execute(redisScript, Arrays.asList("lock"), token);
+                threadLocal.remove();
 
-            return skuInfo;
-        } else {
-            for (; ; ) {
+                return skuInfo;
+            } else {
+                for (; ; ) {
 
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
+                    if (retryLock) {
+                        threadLocal.set(token);
+                        break;
+                    }
                 }
-
-                boolean retryLock = redisTemplate.opsForValue().setIfAbsent("lock", token, 3, TimeUnit.SECONDS);
-                if (retryLock) {
-                    threadLocal.set(token);
-                    break;
-                }
+                return getInfoFromSafeRedis(skuId);
             }
-            return getInfoFromSafeRedis(skuId);
         }
+        return skuInfo;
+
     }
 
     private SkuInfo getInfoFromRedis(Long skuId) {
