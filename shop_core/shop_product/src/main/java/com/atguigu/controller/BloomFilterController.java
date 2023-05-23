@@ -5,6 +5,7 @@ import com.atguigu.service.SkuInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.redisson.api.RBloomFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +20,8 @@ public class BloomFilterController {
     @Autowired
     private RBloomFilter skuBloomFilter;
 
-
+    //每天凌晨4点执行
+    @Scheduled(cron = "* * 4 * * ? ")
     @GetMapping("/sku/bloom")
     public String skuBloom() {
 

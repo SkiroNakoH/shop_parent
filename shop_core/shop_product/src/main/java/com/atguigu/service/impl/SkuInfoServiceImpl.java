@@ -106,7 +106,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
             //判断skuid是否在布隆过滤器中
             if (skuBloomFilter.contains(skuId)) {
                 //分布式锁保证线程安全
-                RLock lock = redissonClient.getLock("lock");
+                RLock lock = redissonClient.getLock("lock-"+skuId);
                 try {
                     lock.lock();
                     //从DB中取值
