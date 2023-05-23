@@ -16,9 +16,9 @@ spring:
     cache: false
     #配置模板路径，默认是templates，可以不用配置
     prefix: classpath:/templates/
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: GMT+8
+#  jackson:
+#    date-format: yyyy-MM-dd HH:mm:ss
+#    time-zone: GMT+8
 feign:
   sentinel:
     enabled: true
@@ -36,4 +36,4 @@ hystrix:
       execution:
         isolation:
           thread:
-            timeoutInMilliseconds: 5000
+            timeoutInMilliseconds: 10000
