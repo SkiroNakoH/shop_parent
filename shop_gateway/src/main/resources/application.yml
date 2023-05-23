@@ -18,7 +18,7 @@ spring:
         - id: shop-product
           uri: lb://shop-product
           predicates:
-            - Path=/product/**
+            - Path=/product/**,/sku/**
         - id: shop-web
           uri: lb://shop-web
           predicates:

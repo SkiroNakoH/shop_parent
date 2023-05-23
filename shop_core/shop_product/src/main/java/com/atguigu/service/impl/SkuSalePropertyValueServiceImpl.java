@@ -1,5 +1,7 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.aop.ShopCache;
+import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.SkuSalePropertyValue;
 import com.atguigu.mapper.SkuSalePropertyValueMapper;
 import com.atguigu.service.SkuSalePropertyValueService;
@@ -26,6 +28,7 @@ public class SkuSalePropertyValueServiceImpl extends ServiceImpl<SkuSaleProperty
     @Autowired
     private SkuSalePropertyValueMapper skuSalePropertyValueMapper;
 
+    @ShopCache(value = "SalePropertyAndSkuMapping",redisTime = RedisConst.SKUKEY_TIMEOUT)
     @Override
     public Map getSalePropertyAndSkuMapping(Long productId) {
         //1.从数据库获取List<map>的映射关系

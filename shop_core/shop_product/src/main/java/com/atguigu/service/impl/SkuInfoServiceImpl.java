@@ -1,5 +1,6 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.aop.ShopCache;
 import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.SkuImage;
 import com.atguigu.entity.SkuInfo;
@@ -87,8 +88,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     }
 
     @Override
+    @ShopCache(value = "skuInfo",redisTime = RedisConst.SKUKEY_TIMEOUT,enableBloom = true)
     public SkuInfo getSkuInfo(Long skuId) {
-        return getInfoFromRedisson(skuId);
+        return getInfoFromDB(skuId);
     }
 
     @Autowired
