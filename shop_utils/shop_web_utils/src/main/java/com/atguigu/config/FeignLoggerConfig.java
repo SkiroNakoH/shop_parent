@@ -8,6 +8,6 @@ import org.springframework.context.annotation.Configuration;
 public class FeignLoggerConfig {
     @Bean
     Logger.Level feignLoggerLevel(){
-        return Logger.Level.FULL;
+        return Logger.Level.BASIC;
     }
 }

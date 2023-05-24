@@ -5,7 +5,6 @@ import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.SkuInfo;
-import com.atguigu.threadPool.MyThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Controller
-public class WebController {
+public class WebDetailController {
     @Autowired
     private SkuDetailFeignClient skuDetailFeignClient;
     @Autowired

@@ -5,6 +5,7 @@ import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.SkuInfo;
 import com.atguigu.feign.SkuDetailFeignClient;
+import com.atguigu.search.CategroyViewVo;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -52,6 +53,11 @@ public class SkuDetailFallBackService  implements SkuDetailFeignClient {
         propertyKey.setSalePropertyKeyName("当前PropertyList服务出错，请稍后重试 getSpuSalePropertyList, (┬＿┬)");
 
         list.add(propertyKey);*/
+        return null;
+    }
+
+    @Override
+    public List<CategroyViewVo> getCategoryView() {
         return null;
     }
 }

@@ -4,6 +4,8 @@ import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.SkuInfo;
 import com.atguigu.fallback.SkuDetailFallBackService;
+import com.atguigu.result.RetVal;
+import com.atguigu.search.CategroyViewVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,4 +38,7 @@ public interface SkuDetailFeignClient {
     @GetMapping("/sku/getSalePropertyAndSkuMapping/{productId}/{skuId}")
     public List<ProductSalePropertyKey> getSpuSalePropertyList(@PathVariable Long productId,
                                                                @PathVariable Long skuId);
+
+    @GetMapping("/product/getCategoryView")
+    public List<CategroyViewVo>  getCategoryView();
 }
