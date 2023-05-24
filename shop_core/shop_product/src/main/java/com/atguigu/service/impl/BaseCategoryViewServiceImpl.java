@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Service
 public class BaseCategoryViewServiceImpl extends ServiceImpl<BaseCategoryViewMapper, BaseCategoryView> implements BaseCategoryViewService {
 
-    @Override
-    public List<CategroyViewVo> getCategoryView() {
+//    @Override
+    public List<CategroyViewVo> getCategoryViewFromView() {
         List<BaseCategoryView> categoryViewList = list(null);
 
         //一级菜单
@@ -72,6 +72,10 @@ public class BaseCategoryViewServiceImpl extends ServiceImpl<BaseCategoryViewMap
             );
             return categroyViewVo;
         }).collect(Collectors.toList());
+    }
 
+    @Override
+    public List<CategroyViewVo> getCategoryView() {
+        return baseMapper.getCategoryView();
     }
 }

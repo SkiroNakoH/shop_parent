@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mapper.BaseCategoryViewMapper">
+
+    <resultMap id="categoryViewMap" type="com.atguigu.search.CategroyViewVo">
+        <!--一级分类菜单-->
+        <id property="categoryId" column="category1_id"/>
+        <result property="categoryName" column="category1_name"/>
+
+        <collection property="categoryChild" ofType="com.atguigu.search.CategroyViewVo">
+            <!--二级分类菜单-->
+            <id property="categoryId" column="category2_id"/>
+            <result property="categoryName" column="category2_name"/>
+
+            <collection property="categoryChild" ofType="com.atguigu.search.CategroyViewVo">
+                <!--三级分类菜单-->
+                <id property="categoryId" column="category3_id"/>
+                <result property="categoryName" column="category3_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getCategoryView" resultMap="categoryViewMap">
+        SELECT a.id     category1_id,
+               a.`name` category1_name,
+               b.id     category2_id,
+               b.name   category2_name,
+               c.id     category3_id,
+               c.name   category3_name
+        FROM base_category1 a
+                 LEFT JOIN base_category2 b ON a.id = b.category1_id
+                 LEFT JOIN base_category3 c ON b.id = c.category2_id
+
+    </select>
+</mapper>
