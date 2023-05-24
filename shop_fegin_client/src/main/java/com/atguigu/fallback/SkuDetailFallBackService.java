@@ -17,12 +17,13 @@ import java.util.Map;
 public class SkuDetailFallBackService  implements SkuDetailFeignClient {
     @Override
     public SkuInfo getSkuInfo(Long skuId) {
-    /*    SkuInfo skuInfo = new SkuInfo();
+        SkuInfo skuInfo = new SkuInfo();
         skuInfo.setSkuDesc("当前SkuInfo服务出错，请稍后重试 getSkuInfo, (┬＿┬)");
         //防止controller获取参数时报错
         skuInfo.setProductId(0L);
-        skuInfo.setCategory3Id(0L);*/
-        return null;
+        skuInfo.setCategory3Id(0L);
+
+        return skuInfo;
     }
 
     @Override
