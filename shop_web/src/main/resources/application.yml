@@ -37,3 +37,10 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 10000
+
+thread:
+  pool:
+    core_pool_size: 16
+    maximum_pool_size: 32
+    keep_alive_time: 30
+    work_queue_num: 100
