@@ -26,9 +26,9 @@
         SELECT a.id     category1_id,
                a.`name` category1_name,
                b.id     category2_id,
-               b.name   category2_name,
+               b.`name`   category2_name,
                c.id     category3_id,
-               c.name   category3_name
+               c.`name`   category3_name
         FROM base_category1 a
                  LEFT JOIN base_category2 b ON a.id = b.category1_id
                  LEFT JOIN base_category3 c ON b.id = c.category2_id

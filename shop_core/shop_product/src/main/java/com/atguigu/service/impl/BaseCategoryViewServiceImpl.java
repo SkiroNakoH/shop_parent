@@ -1,5 +1,7 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.aop.ShopCache;
+import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.mapper.BaseCategoryViewMapper;
 import com.atguigu.search.CategroyViewVo;
@@ -74,6 +76,7 @@ public class BaseCategoryViewServiceImpl extends ServiceImpl<BaseCategoryViewMap
         }).collect(Collectors.toList());
     }
 
+    @ShopCache(value = "categoryViewList",redisTime = RedisConst.SKUKEY_TIMEOUT)
     @Override
     public List<CategroyViewVo> getCategoryView() {
         return baseMapper.getCategoryView();
