@@ -14,6 +14,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>shop_product</module>
+        <module>shop_search</module>
     </modules>
     <dependencies>
         <!--依赖服务的工具类-->
