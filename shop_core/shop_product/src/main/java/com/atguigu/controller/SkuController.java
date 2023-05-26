@@ -92,7 +92,8 @@ public class SkuController {
         skuInfo.setIsSale(0);
 
         skuInfoService.updateById(skuInfo);
-
+        //feign远程调用，将商品從elasticsearch中下架
+        searchFeignClient.offSale(skuId);
         return RetVal.ok();
     }
 }

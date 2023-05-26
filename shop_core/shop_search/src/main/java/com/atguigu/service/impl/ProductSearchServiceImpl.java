@@ -66,4 +66,9 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 
         productSearchMapper.save(product);
     }
+
+    @Override
+    public void offSale(Long skuId) {
+        productSearchMapper.deleteById(skuId);
+    }
 }

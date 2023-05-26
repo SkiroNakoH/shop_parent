@@ -11,4 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface SearchFeignClient {
     @GetMapping("/search/onSale/{skuId}")
     public RetVal onsale(@PathVariable Long skuId);
+
+    @GetMapping("/search/offSale/{skuId}")
+    public RetVal offSale(@PathVariable Long skuId);
 }

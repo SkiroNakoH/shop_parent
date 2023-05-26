@@ -32,4 +32,10 @@ public class SearchController {
         productSearchService.onsale(skuId);
         return RetVal.ok();
     }
+
+    @GetMapping("/offSale/{skuId}")
+    public RetVal offSale(@PathVariable Long skuId){
+        productSearchService.offSale(skuId);
+        return RetVal.ok();
+    }
 }
