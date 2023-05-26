@@ -91,13 +91,14 @@ public class ShopCacheAspect {
         //获取注解中的缓存名
         String prefix = annotation.value();
         Object firstParam;
-
+        String cacheKey;
         if(methodParams != null && methodParams.length > 0){
-             firstParam = ":" + methodParams[0];
+             firstParam = methodParams[0];
+            cacheKey= prefix + ": " + firstParam;
         }else{
             firstParam = "";
+            cacheKey= prefix;
         }
-        String cacheKey = prefix + firstParam;
 
         Object obj = redisTemplate.opsForValue().get(cacheKey);
         //判断是否要加锁
@@ -108,7 +109,7 @@ public class ShopCacheAspect {
              * 定义两个string类型的变量a,b
              * a.intern() == b 相当于 a.equals(b)
              */
-            synchronized (("lock" + firstParam).intern()) {
+            synchronized (("lock-" + firstParam).intern()) {
                 //判断是否要从数据库中查找
                 if (obj == null) {
                     //判断是否需要查找布隆过滤器

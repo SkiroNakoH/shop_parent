@@ -2,6 +2,7 @@ package com.atguigu.controller;
 
 import com.atguigu.result.RetVal;
 import com.atguigu.search.Product;
+import com.atguigu.service.ProductSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SearchController {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Autowired
+    private ProductSearchService productSearchService;
 
     @GetMapping("/create")
     public String createIndex() {
@@ -24,4 +27,9 @@ public class SearchController {
         return "success";
     }
 
+    @GetMapping("/onSale/{skuId}")
+    public RetVal onsale(@PathVariable Long skuId){
+        productSearchService.onsale(skuId);
+        return RetVal.ok();
+    }
 }

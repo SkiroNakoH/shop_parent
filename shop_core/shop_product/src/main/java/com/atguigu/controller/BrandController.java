@@ -105,4 +105,11 @@ public class BrandController {
     public RetVal fileUpload(MultipartFile file) throws Exception {
         return RetVal.ok( minioUtil.upload(file));
     }
+
+
+    //feign查询品牌
+    @GetMapping("/feign/{brandId}")
+    public BaseBrand getBrand(@PathVariable Long brandId) {
+        return brandService.getById(brandId);
+    }
 }

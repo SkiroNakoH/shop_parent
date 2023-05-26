@@ -19,4 +19,6 @@ public interface PlatformPropertyKeyMapper extends BaseMapper<PlatformPropertyKe
     List<PlatformPropertyKey> getPlatformPropertyByCategoryId(@Param("category1Id") Long category1Id,
                                                               @Param("category2Id") Long category2Id,
                                                               @Param("category3Id") Long category3Id);
+
+    List<PlatformPropertyKey> getPlatformPropertyBySkuId(Long skuId);
 }

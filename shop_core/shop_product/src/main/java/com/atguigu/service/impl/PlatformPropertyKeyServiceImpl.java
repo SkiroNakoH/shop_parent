@@ -96,4 +96,9 @@ public class PlatformPropertyKeyServiceImpl extends ServiceImpl<PlatformProperty
 
         }
     }
+
+    @Override
+    public List<PlatformPropertyKey> getPlatformPropertyBySkuId(Long skuId) {
+        return baseMapper.getPlatformPropertyBySkuId(skuId);
+    }
 }

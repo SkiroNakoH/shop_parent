@@ -1,8 +1,6 @@
 package com.atguigu.feign;
 
-import com.atguigu.entity.BaseCategoryView;
-import com.atguigu.entity.ProductSalePropertyKey;
-import com.atguigu.entity.SkuInfo;
+import com.atguigu.entity.*;
 import com.atguigu.fallback.SkuDetailFallBackService;
 import com.atguigu.result.RetVal;
 import com.atguigu.search.CategroyViewVo;
@@ -41,4 +39,10 @@ public interface SkuDetailFeignClient {
 
     @GetMapping("/product/getCategoryView")
     public List<CategroyViewVo>  getCategoryView();
+
+    @GetMapping("/product/brand/feign/{brandId}")
+    public BaseBrand getBrand(@PathVariable Long brandId);
+
+    @GetMapping("/product/getPlatformPropertyBySkuId/{skuId}")
+    public List<PlatformPropertyKey> getPlatformPropertyBySkuId(@PathVariable Long skuId);
 }

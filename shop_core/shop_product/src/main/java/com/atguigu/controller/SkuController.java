@@ -5,6 +5,7 @@ import com.atguigu.entity.ProductImage;
 import com.atguigu.entity.ProductSalePropertyKey;
 import com.atguigu.entity.ProductSpu;
 import com.atguigu.entity.SkuInfo;
+import com.atguigu.feign.SearchFeignClient;
 import com.atguigu.result.RetVal;
 import com.atguigu.service.ProductImageService;
 import com.atguigu.service.ProductSalePropertyKeyService;
@@ -33,6 +34,8 @@ public class SkuController {
     private ProductImageService productImageService;
     @Autowired
     private SkuInfoService skuInfoService;
+    @Autowired
+    private SearchFeignClient searchFeignClient;
 
     @GetMapping("/querySalePropertyByProductId/{productId}")
     public RetVal querySalePropertyByProductId(@PathVariable Long productId) {
@@ -52,7 +55,7 @@ public class SkuController {
     }
 
     @PostMapping("/saveSkuInfo")
-    public RetVal saveSkuInfo(@RequestBody SkuInfo skuInfo){
+    public RetVal saveSkuInfo(@RequestBody SkuInfo skuInfo) {
 
         skuInfoService.saveSkuInfo(skuInfo);
         return RetVal.ok();
@@ -76,7 +79,8 @@ public class SkuController {
         skuInfo.setIsSale(1);
 
         skuInfoService.updateById(skuInfo);
-
+        //feign远程调用，将商品上架到elasticsearch中
+        searchFeignClient.onsale(skuId);
         return RetVal.ok();
     }
 

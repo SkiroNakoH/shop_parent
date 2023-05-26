@@ -1,9 +1,7 @@
 package com.atguigu.fallback;
 
 
-import com.atguigu.entity.BaseCategoryView;
-import com.atguigu.entity.ProductSalePropertyKey;
-import com.atguigu.entity.SkuInfo;
+import com.atguigu.entity.*;
 import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.search.CategroyViewVo;
 import org.springframework.stereotype.Component;
@@ -58,6 +56,16 @@ public class SkuDetailFallBackService  implements SkuDetailFeignClient {
 
     @Override
     public List<CategroyViewVo> getCategoryView() {
+        return null;
+    }
+
+    @Override
+    public BaseBrand getBrand(Long brandId) {
+        return null;
+    }
+
+    @Override
+    public List<PlatformPropertyKey> getPlatformPropertyBySkuId(Long skuId) {
         return null;
     }
 }

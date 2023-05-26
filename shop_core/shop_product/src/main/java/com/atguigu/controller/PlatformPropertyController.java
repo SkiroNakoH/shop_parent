@@ -59,5 +59,11 @@ public class PlatformPropertyController {
 
         return RetVal.ok();
     }
+
+    //feign调用获取平台属性
+    @GetMapping("/getPlatformPropertyBySkuId/{skuId}")
+    public List<PlatformPropertyKey> getPlatformPropertyBySkuId(@PathVariable Long skuId){
+        return platformPropertyKeyService.getPlatformPropertyBySkuId(skuId);
+    }
 }
 
