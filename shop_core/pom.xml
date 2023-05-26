@@ -28,6 +28,12 @@
             <artifactId>shop_model</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!--依赖服务调用模块-->
+        <dependency>
+            <groupId>com.atguigu</groupId>
+            <artifactId>shop_fegin_client</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!--web 需要启动项目-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
