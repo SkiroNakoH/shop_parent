@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient("shop-search")
 public interface SearchFeignClient {
     @GetMapping("/search/onSale/{skuId}")
-    public RetVal onsale(@PathVariable Long skuId);
+    public RetVal onSale(@PathVariable Long skuId);
 
     @GetMapping("/search/offSale/{skuId}")
     public RetVal offSale(@PathVariable Long skuId);

@@ -80,7 +80,7 @@ public class SkuController {
 
         skuInfoService.updateById(skuInfo);
         //feign远程调用，将商品上架到elasticsearch中
-        searchFeignClient.onsale(skuId);
+        searchFeignClient.onSale(skuId);
         return RetVal.ok();
     }
 
