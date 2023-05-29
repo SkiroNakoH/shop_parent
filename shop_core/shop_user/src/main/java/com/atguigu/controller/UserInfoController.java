@@ -9,11 +9,7 @@ import com.atguigu.service.UserInfoService;
 import com.atguigu.util.IpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -60,6 +56,17 @@ public class UserInfoController {
         retMap.put("token",token);
 
         return RetVal.ok(retMap);
+    }
+
+    @GetMapping("/logout")
+    public RetVal logout(HttpServletRequest request){
+        //从redis中删除 用户缓存
+        String token = request.getHeader("token");
+        String userLoginKey = RedisConst.USER_LOGIN_KEY_PREFIX + token;
+
+        redisTemplate.delete(userLoginKey);
+
+        return RetVal.ok();
     }
 }
 
