@@ -9,4 +9,6 @@ public interface ProductSearchService {
     void offSale(Long skuId);
 
     SearchResponseVo searchProduct(SearchParam searchParam);
+
+    void incrHotScore(Long skuId);
 }

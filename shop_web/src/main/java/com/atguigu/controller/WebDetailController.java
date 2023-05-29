@@ -1,6 +1,7 @@
 package com.atguigu.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.atguigu.feign.SearchFeignClient;
 import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.ProductSalePropertyKey;
@@ -21,6 +22,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class WebDetailController {
     @Autowired
     private SkuDetailFeignClient skuDetailFeignClient;
+    @Autowired
+    private SearchFeignClient searchFeignClient;
     @Autowired
     private ThreadPoolExecutor myThreadPool;
 
@@ -59,6 +62,11 @@ public class WebDetailController {
             Long productId = skuInfo.getProductId();
             List<ProductSalePropertyKey> spuSalePropertyList = skuDetailFeignClient.getSpuSalePropertyList(productId, skuId);
             model.addAttribute("spuSalePropertyList", spuSalePropertyList);
+        },myThreadPool);
+
+        //6. 当商品被点击时，让热点评分 +1
+        CompletableFuture.runAsync(()->{
+            searchFeignClient.incrHotScore(skuId);
         },myThreadPool);
 
         //等待异步编排处理完数据后返回页面

@@ -20,4 +20,7 @@ public interface SearchFeignClient {
 
     @PostMapping("/search/searchProduct")
     public RetVal searchProduct(@RequestBody SearchParam searchParam);
+
+    @GetMapping("/search/incrHotScore/{skuId}")
+    public String incrHotScore(@PathVariable Long skuId);
 }

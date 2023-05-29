@@ -45,4 +45,14 @@ public class SearchController {
         SearchResponseVo searchResponseVo = productSearchService.searchProduct(searchParam);
         return RetVal.ok(searchResponseVo);
     }
+
+    //商品热度分 +1
+    @GetMapping("incrHotScore/{skuId}")
+    public String incrHotScore(@PathVariable Long skuId) {
+        productSearchService.incrHotScore(skuId);
+        return "success";
+    }
+
+
+
 }

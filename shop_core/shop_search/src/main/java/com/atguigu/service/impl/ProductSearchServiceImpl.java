@@ -1,6 +1,7 @@
 package com.atguigu.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.BaseBrand;
 import com.atguigu.entity.BaseCategoryView;
 import com.atguigu.entity.PlatformPropertyKey;
@@ -34,12 +35,14 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -55,7 +58,8 @@ public class ProductSearchServiceImpl implements ProductSearchService {
     //执行es语句的客户端
     @Autowired
     private RestHighLevelClient restHighLevelClient;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public void onSale(Long skuId) {
@@ -142,6 +146,23 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         );
 
         return searchResponseVo;
+    }
+
+    @Override
+    public void incrHotScore(Long skuId) {
+        //将点击量存入redis，当达到一定值后进行提交入es中
+        String hotScoreKey = "sku:hotScore";
+        Double count = redisTemplate.opsForZSet().incrementScore(hotScoreKey, skuId, 1);
+
+        if(count % 2 == 0){
+            Optional<Product> productOptional = productSearchMapper.findById(skuId);
+            Product product = productOptional.get();
+
+            //Math.round(count) 由于count是double类型,需要对count四舍五入
+            product.setHotScore(Math.round(count));
+
+            productSearchMapper.save(product);
+        }
     }
 
     //解析查询结果
