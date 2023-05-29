@@ -34,3 +34,6 @@ spring:
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true
+
+filter:
+  whiteFilter: addCart.html,myOrder.html
