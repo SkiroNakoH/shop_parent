@@ -39,8 +39,9 @@ public class SearchController {
         return RetVal.ok();
     }
 
+    //从ES中查出商品列表
     @PostMapping("/searchProduct")
-    public RetVal searchProduct(SearchParam searchParam){
+    public RetVal searchProduct(@RequestBody SearchParam searchParam){
         SearchResponseVo searchResponseVo = productSearchService.searchProduct(searchParam);
         return RetVal.ok(searchResponseVo);
     }
