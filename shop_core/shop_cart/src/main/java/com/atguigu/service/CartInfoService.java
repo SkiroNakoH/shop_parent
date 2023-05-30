@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface CartInfoService extends IService<CartInfo> {
 
+    void addCart(Long skuId, Integer skuNum, String oneOfUserId);
 }

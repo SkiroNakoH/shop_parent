@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * <p>
@@ -69,5 +70,8 @@ public class CartInfo implements Serializable {
     @TableField(exist = false)
     BigDecimal realTimePrice;
 
+    //添加时间
+    private Date createTime;
+    private Date updateTime;
 
 }
