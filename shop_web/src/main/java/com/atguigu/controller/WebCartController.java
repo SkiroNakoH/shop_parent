@@ -1,6 +1,7 @@
 package com.atguigu.controller;
 
 import com.atguigu.entity.SkuInfo;
+import com.atguigu.feign.CartFeignClient;
 import com.atguigu.feign.SkuDetailFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,16 +14,19 @@ import javax.servlet.http.HttpServletRequest;
 public class WebCartController {
     @Autowired
     private SkuDetailFeignClient skuDetailFeignClient;
+    @Autowired
+    private CartFeignClient cartFeignClient;
 
     //http://cart.gmall.com/addCart.html?skuId=24&skuNum=1
     @RequestMapping("/addCart.html")
-    public String addCart(HttpServletRequest request) {
-        Long skuId = Long.valueOf(request.getParameter("skuId"));
-        Integer skuNum = Integer.valueOf(request.getParameter("skuNum"));
+    public String addCart(@RequestParam Long skuId,@RequestParam Integer skuNum,HttpServletRequest request) {
+//        String userTempId = request.getHeader("userTempId");
 
-        SkuInfo skuInfo = skuDetailFeignClient.getSkuInfo(skuId);
-        request.setAttribute("skuInfo",skuInfo);
-        request.setAttribute("skuNum",skuNum);
+        //远程调用，添加购物车
+        cartFeignClient.addCart(skuId,skuNum);
+
+        request.setAttribute("skuInfo", skuDetailFeignClient.getSkuInfo(skuId));
+        request.setAttribute("skuNum", skuNum);
 
         return "cart/addCart";
     }

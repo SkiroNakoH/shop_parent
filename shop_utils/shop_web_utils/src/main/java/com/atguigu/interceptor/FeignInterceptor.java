@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
  * 用来对发起feign请求的拦截器
  * 在这里我们用它来把一个微服务的(用户id信息)传给另一个微服务
  */
-//@Component
+@Component
 public class FeignInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate requestTemplate){
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();

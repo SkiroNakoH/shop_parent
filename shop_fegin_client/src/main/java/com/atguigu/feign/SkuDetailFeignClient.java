@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@FeignClient(value = "shop-product",fallback = SkuDetailFallBackService.class)
+@FeignClient(value = "shop-product")
+//@FeignClient(value = "shop-product",fallback = SkuDetailFallBackService.class)
 public interface SkuDetailFeignClient {
     //1.获取商品基本信息，包括商品图片
     @GetMapping("/sku/getSkuInfo/{skuId}")
