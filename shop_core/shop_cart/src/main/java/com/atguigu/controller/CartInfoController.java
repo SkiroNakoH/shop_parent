@@ -30,12 +30,21 @@ public class CartInfoController {
     private CartInfoService cartInfoService;
 
     @GetMapping("/addCart/{skuId}/{skuNum}")
-    public void addCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request){
+    public void addCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request) {
         String oneOfUserId = AuthContextHolder.getUserId(request);
-        if(StringUtils.isEmpty(oneOfUserId))
+        if (StringUtils.isEmpty(oneOfUserId))
             oneOfUserId = AuthContextHolder.getUserTempId(request);
 
-        cartInfoService.addCart(skuId,skuNum,oneOfUserId);
+        cartInfoService.addCart(skuId, skuNum, oneOfUserId);
     }
+
+    @GetMapping("/getCartList")
+    public RetVal getCartList(HttpServletRequest request) {
+        String userId = AuthContextHolder.getUserId(request);
+        String userTempId = AuthContextHolder.getUserTempId(request);
+
+        return RetVal.ok(cartInfoService.getCartList(userId,userTempId));
+    }
+
 }
 

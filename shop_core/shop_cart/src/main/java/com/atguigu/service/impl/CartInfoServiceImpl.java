@@ -7,13 +7,21 @@ import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.mapper.CartInfoMapper;
 import com.atguigu.service.CartInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -66,6 +74,56 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
         }
         //更新过期时间
         redisTemplate.expire(getUserCartKey(oneOfUserId), RedisConst.USER_CART_EXPIRE, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public List<CartInfo> getCartList(String userId, String userTempId) {
+        List<CartInfo> cartInfoList = new ArrayList<>();
+        //1.未登录的情况
+        if(StringUtils.isEmpty(userId)&&!StringUtils.isEmpty(userTempId)){
+           return getCartListFromRedis(userTempId);
+        }
+
+        //2.已登录的情况
+        if(!StringUtils.isEmpty(userId)&&!StringUtils.isEmpty(userTempId)){
+
+        }
+
+        return cartInfoList;
+    }
+
+    @SneakyThrows
+    private List<CartInfo> getCartListFromRedis(String userTempId) {
+        //获取购物车列表
+        BoundHashOperations hashOps = getRedisHashOps(userTempId);
+        List<CartInfo>  cartInfoList = hashOps.values();
+        //db价格有修改，需要更新
+        CompletableFuture<List<CartInfo>> cartInfoFuture = CompletableFuture.supplyAsync(() -> {
+            updateCartInfoPrice4Redis(hashOps, cartInfoList);
+            return cartInfoList;
+        });
+        //按照时间排序
+        return cartInfoFuture.thenApplyAsync(infoList ->
+                infoList.stream()
+                        .sorted(Comparator.comparing(CartInfo::getUpdateTime).reversed())
+                        .collect(Collectors.toList())).get();
+    }
+
+    //更新redis的价格
+    private void updateCartInfoPrice4Redis(BoundHashOperations hashOps, List<CartInfo> cartInfoList) {
+        for (CartInfo cartInfo : cartInfoList) {
+            Long skuId = cartInfo.getSkuId();
+            //查询现在的价格
+            BigDecimal dbPrice = skuDetailFeignClient.getPrice(skuId);
+            //查出redsiPrice
+            BigDecimal redisPrice = cartInfo.getCartPrice();
+            if(!dbPrice.equals(redisPrice)){
+                //更新价格 然后同步到redis当中
+                cartInfo.setRealTimePrice(dbPrice);
+                //提交
+                hashOps.put(skuId.toString(), cartInfo);
+            }
+        }
     }
 
     private BoundHashOperations getRedisHashOps(String oneOfUserId) {

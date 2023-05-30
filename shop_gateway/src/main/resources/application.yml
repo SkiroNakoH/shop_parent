@@ -15,7 +15,7 @@ spring:
         locator:      #路由访问方式：http://Gateway_HOST:Gateway_PORT/大写的serviceId/**，其中微服务应用名默认大写访问。
           enabled: true
       routes:
-        - id: shop-product
+        - id: shop-porduct
           uri: lb://shop-product
           predicates:
             - Path=/product/**,/sku/**
@@ -23,10 +23,22 @@ spring:
           uri: lb://shop-user
           predicates:
             - Path=/user/**
-        - id: shop_order
-          uri: lb://shop_order
+        - id: shop-cart
+          uri: lb://shop-cart
+          predicates:
+            - Path=/cart/**
+        - id: shop-order
+          uri: lb://shop-order
           predicates:
             - Path=/order/**
+        - id: shop-payment
+          uri: lb://shop-payment
+          predicates:
+            - Path=/payment/**
+        - id: shop-seckill
+          uri: lb://shop-seckill
+          predicates:
+            - Path=/seckill/**
         - id: shop-web
           uri: lb://shop-web
           predicates:

@@ -1,6 +1,6 @@
 var cart = {
 
-    api_name: '/cart/',
+    api_name: '/cart',
 
   // 添加购物车
   addToCart(skuId, skuNum) {

@@ -31,4 +31,9 @@ public class WebCartController {
         return "cart/addCart";
     }
 
+    @RequestMapping("/cart.html")
+    public String cartHtml() {
+
+        return "cart/index";
+    }
 }
