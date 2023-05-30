@@ -39,5 +39,5 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
 
-filter: #addCart.html,myOrder.html
-  whiteFilter: xxx,ll
+filter:       #addCart.html,myOrder.html
+  whiteFilter: xxxx,kkkk

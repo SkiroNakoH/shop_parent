@@ -30,6 +30,5 @@ public class CartInfoController {
 
         System.out.println();
     }
-
 }
 

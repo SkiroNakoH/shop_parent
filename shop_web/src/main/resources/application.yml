@@ -28,9 +28,7 @@ feign:
         readTimeout: 30000
         connectTimeout: 10000
   hystrix:
-    enabled: false #因为开启了feign熔断器,在自定义feign拦截器requestInterceptor中获取RequestContextHolder.getRequestAttributes()值为空
-
-
+    enabled: false #防止自定义feign接口无法接收对象
 # 设置hystrix超时时间
 hystrix:
   command:

@@ -17,11 +17,11 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -54,10 +54,10 @@ public class AccessFilter implements GlobalFilter {
         String userTempId = getUserTempId(request);
 
         //用户已登录，将userid和userTemplate存储进入request中,放行
-        if (!StringUtils.isEmpty(userId)) {
-            //将userid和userTemplate存储进入request中
+        if (!StringUtils.isEmpty(userId))
             return saveUser2Request(exchange, chain, request, userId, userTempId);
-        }
+
+
 
         String[] filterSplit = filterWhiteFilter.split(",");
         for (String filter : filterSplit) {
@@ -67,23 +67,13 @@ public class AccessFilter implements GlobalFilter {
                 response.setStatusCode(HttpStatus.SEE_OTHER);
                 return response.setComplete();
             }
+
         }
+
         //将userid和userTemplate存储进入request中,放行
         return saveUser2Request(exchange, chain, request, userId, userTempId);
-
 //        放行
-      /*  if (StringUtils.isEmpty(userId) && StringUtils.isEmpty(userTempId))
-            return chain.filter(exchange);
-
-        //将userid和userTemplate存储进入request中
-        if(!StringUtils.isEmpty(userId)){
-            request.mutate().header("userId",userId);
-        }
-        if(!StringUtils.isEmpty(userTempId)){
-            request.mutate().header("userTempId",userTempId);
-        }
-
-        return chain.filter(exchange.mutate().request(request).build());*/
+//        return chain.filter(exchange);
     }
 
     private static Mono<Void> saveUser2Request(ServerWebExchange exchange, GatewayFilterChain chain, ServerHttpRequest request, String userId, String userTempId) {
@@ -100,7 +90,6 @@ public class AccessFilter implements GlobalFilter {
 
         return chain.filter(exchange.mutate().request(request).build());
     }
-
 
     private static Mono<Void> writerDataToBrowser(ServerHttpResponse response, RetValCodeEnum retValCodeEnum) {
         //用户非法访问，返回警告
@@ -141,5 +130,6 @@ public class AccessFilter implements GlobalFilter {
         }
 
         return null;
+
     }
 }
