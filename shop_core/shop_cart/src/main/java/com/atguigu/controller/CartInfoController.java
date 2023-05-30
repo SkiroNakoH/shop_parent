@@ -40,6 +40,7 @@ public class CartInfoController {
 
     @GetMapping("/getCartList")
     public RetVal getCartList(HttpServletRequest request) {
+        //todo： 登录无法获取userid
         String userId = AuthContextHolder.getUserId(request);
         String userTempId = AuthContextHolder.getUserTempId(request);
 

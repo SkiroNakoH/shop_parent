@@ -12,13 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -80,23 +78,98 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
     public List<CartInfo> getCartList(String userId, String userTempId) {
         List<CartInfo> cartInfoList = new ArrayList<>();
         //1.未登录的情况
-        if(StringUtils.isEmpty(userId)&&!StringUtils.isEmpty(userTempId)){
-           return getCartListFromRedis(userTempId);
+        if (StringUtils.isEmpty(userId) && !StringUtils.isEmpty(userTempId)) {
+            return getCartListFromRedis(userTempId);
         }
 
         //2.已登录的情况
-        if(!StringUtils.isEmpty(userId)&&!StringUtils.isEmpty(userTempId)){
-
+        if (!StringUtils.isEmpty(userId) && !StringUtils.isEmpty(userTempId)) {
+            //查询所有已登录购物项
+            BoundHashOperations hashOps = getRedisHashOps(userId);
+            Set keys = hashOps.keys();
+            if (!CollectionUtils.isEmpty(keys)) {
+                //合并两个购物车
+                return mergeCartInfoList(userId, userTempId);
+            } else {
+                //todo 登录的购物车没货物，只需要该未登录的购物车名称为登录用户名
+                return putNoLoginCart2Login(userId, userTempId);
+            }
         }
 
         return cartInfoList;
+    }
+
+    private List<CartInfo> putNoLoginCart2Login(String userId, String userTempId) {
+        //查询所有未登录的
+        BoundHashOperations noLoginHashOps = getRedisHashOps(userTempId);
+        List<CartInfo> noLoginCartInfoList = noLoginHashOps.values();
+
+        Map<String, CartInfo> loginCartInfoMap = noLoginCartInfoList.stream().map(cartInfo -> {
+            cartInfo.setUserId(userId);
+            return cartInfo;
+        }).collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
+
+
+        //提交所有
+        getRedisHashOps(userId).putAll(loginCartInfoMap);
+        //把临时购物车里面的内容删除
+        String userCartKey = getUserCartKey(userTempId);
+        redisTemplate.delete(userCartKey);
+
+        return loginCartInfoMap.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .sorted(Comparator.comparing(CartInfo::getUpdateTime).reversed())
+                .collect(Collectors.toList());
+    }
+
+
+    //合并购物车
+    private List<CartInfo> mergeCartInfoList(String userId, String userTempId) {
+        //获取两个购物车
+        //查询所有未登录的
+        BoundHashOperations noLoginHashOps = getRedisHashOps(userTempId);
+        List<CartInfo> noLoginCartInfoList = noLoginHashOps.values();
+        //查询所有已登录的
+        BoundHashOperations loginHashOps = getRedisHashOps(userId);
+        List<CartInfo> loginCartInfoList = loginHashOps.values();
+
+        //将登录购物车转map，再判断未登录是否再登录购物车里
+        Map<String, CartInfo> loginCartInfoMap = loginCartInfoList.stream()
+                .collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
+
+        for (CartInfo noLoginCartInfo : noLoginCartInfoList) {
+            String noLoginSkuId = String.valueOf(noLoginCartInfo.getSkuId());
+            if (loginCartInfoMap.containsKey(noLoginSkuId)) {
+                //修改数量
+                CartInfo loginCartInfo = loginCartInfoMap.get(noLoginSkuId);
+                loginCartInfo.setSkuNum(loginCartInfo.getSkuNum() + noLoginCartInfo.getSkuNum());
+            } else {
+                //当skuId不同把临时用户id改为登录用户id
+                noLoginCartInfo.setUserId(userId);
+                loginCartInfoMap.put(noLoginSkuId, noLoginCartInfo);
+            }
+
+            loginCartInfoMap.get(noLoginSkuId).setUpdateTime(new Date());
+        }
+
+        //提交所有
+        loginHashOps.putAll(loginCartInfoMap);
+        //把临时购物车里面的内容删除
+        String userCartKey = getUserCartKey(userTempId);
+        redisTemplate.delete(userCartKey);
+
+        return loginCartInfoMap.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .sorted(Comparator.comparing(CartInfo::getUpdateTime).reversed())
+                .collect(Collectors.toList());
+
     }
 
     @SneakyThrows
     private List<CartInfo> getCartListFromRedis(String userTempId) {
         //获取购物车列表
         BoundHashOperations hashOps = getRedisHashOps(userTempId);
-        List<CartInfo>  cartInfoList = hashOps.values();
+        List<CartInfo> cartInfoList = hashOps.values();
         //db价格有修改，需要更新
         CompletableFuture<List<CartInfo>> cartInfoFuture = CompletableFuture.supplyAsync(() -> {
             updateCartInfoPrice4Redis(hashOps, cartInfoList);
@@ -117,7 +190,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             BigDecimal dbPrice = skuDetailFeignClient.getPrice(skuId);
             //查出redsiPrice
             BigDecimal redisPrice = cartInfo.getCartPrice();
-            if(!dbPrice.equals(redisPrice)){
+            if (!dbPrice.equals(redisPrice)) {
                 //更新价格 然后同步到redis当中
                 cartInfo.setRealTimePrice(dbPrice);
                 //提交
