@@ -4,20 +4,20 @@ package com.atguigu.controller;
 import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.CartInfo;
 import com.atguigu.entity.OrderDetail;
+import com.atguigu.entity.OrderInfo;
 import com.atguigu.entity.UserAddress;
 import com.atguigu.feign.CartFeignClient;
 import com.atguigu.feign.UserFeignClient;
 import com.atguigu.result.RetVal;
+import com.atguigu.service.OrderInfoService;
 import com.atguigu.util.AuthContextHolder;
 import com.atguigu.util.UserIdUtil;
 import io.swagger.models.auth.In;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +35,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/order")
 public class OrderInfoController {
+    @Autowired
+    private OrderInfoService orderInfoService;
     @Autowired
     private CartFeignClient cartFeignClient;
     @Autowired
@@ -78,15 +80,40 @@ public class OrderInfoController {
         map.put("userAddressList", userAddressList);
         map.put("detailArrayList", detailArrayList);
         map.put("totalNum", totalNum);
-        map.put("totalMoney",totalMoney);
+        map.put("totalMoney", totalMoney);
         //为了防止用户重复提交，需要设置 流水号
-        String tradeNo= UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set("user:"+userId+":tradeNo",tradeNo);
+        String tradeNo = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set("user:" + userId + ":tradeNo", tradeNo);
 
         //将流水号 返回给前端
-        map.put("tradeNo",tradeNo);
+        map.put("tradeNo", tradeNo);
 
         return RetVal.ok(map);
+    }
+
+    @PostMapping("/submitOrder")
+    public RetVal submitOrder(@RequestBody OrderInfo orderInfo, HttpServletRequest request) {
+        String tradeNo = request.getParameter("tradeNo");
+        String userId = UserIdUtil.getUserId(request, redisTemplate);
+
+        //从redis中获取到流水号，判断是否一致
+        String tradeNoKey = "user:" + userId + ":tradeNo";
+        if (!tradeNo.equals(redisTemplate.opsForValue().get(tradeNo)))
+            return RetVal.fail().message("不能重复提交订单");
+
+        //核对订单中商品价格和库存
+        StringBuilder checkOrderMessage = orderInfoService.checkPriceAndStock(orderInfo);
+        if (StringUtils.isEmpty(checkOrderMessage.toString())) {
+            return RetVal.fail().message(checkOrderMessage.append("，需要刷新页面").toString());
+        }
+
+        //保存订单
+        Long orderId = orderInfoService.saveOrderInfo(orderInfo,userId);
+
+        //删除redis中的流水号
+        redisTemplate.delete(tradeNoKey);
+
+        return RetVal.ok(orderId);
     }
 }
 

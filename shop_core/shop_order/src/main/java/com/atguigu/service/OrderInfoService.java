@@ -13,4 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface OrderInfoService extends IService<OrderInfo> {
 
+    StringBuilder checkPriceAndStock(OrderInfo orderInfo);
+
+    Long saveOrderInfo(OrderInfo orderInfo, String userId);
 }

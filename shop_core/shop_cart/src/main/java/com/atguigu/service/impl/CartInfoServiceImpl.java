@@ -94,7 +94,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
                 //合并两个购物车
                 return mergeCartInfoList(userId, userTempId);
             } else {
-                //todo 登录的购物车没货物，只需要该未登录的购物车名称为登录用户名
+                //登录的购物车没货物，只需要该未登录的购物车名称为登录用户名
                 return putNoLoginCart2Login(userId, userTempId);
             }
         }

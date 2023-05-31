@@ -15,6 +15,7 @@
         <module>shop_gateway</module>
         <module>shop_web</module>
         <module>shop_fegin_client</module>
+        <module>ware-manage</module>
     </modules>
 
     <!--引入spring boot 版本依赖-->
