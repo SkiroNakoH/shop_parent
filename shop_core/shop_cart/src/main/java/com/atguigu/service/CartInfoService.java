@@ -18,4 +18,8 @@ public interface CartInfoService extends IService<CartInfo> {
     void addCart(Long skuId, Integer skuNum, String oneOfUserId);
 
     List<CartInfo> getCartList(String userId, String userTempId);
+
+    void checkCart(Long skuId, Integer isChecked, String oneOfUserId);
+
+    void deleteCart(Long skuId, String oneOfUserId);
 }

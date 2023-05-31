@@ -1,5 +1,6 @@
 package com.atguigu.service;
 
+import com.atguigu.controller.SkuDetailController;
 import com.atguigu.entity.SkuInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -16,4 +17,6 @@ public interface SkuInfoService extends IService<SkuInfo> {
     void saveSkuInfo(SkuInfo skuInfo);
 
     SkuInfo getSkuInfo(Long skuId);
+
+    SkuInfo getInfoFromDB(Long skuId);
 }

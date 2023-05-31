@@ -221,7 +221,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         return skuInfo;
     }
 
-    private SkuInfo getInfoFromDB(Long skuId) {
+    @Autowired
+    public SkuInfo getInfoFromDB(Long skuId) {
         SkuInfo skuInfo = getById(skuId);
 
         LambdaQueryWrapper<SkuImage> queryWrapper = new LambdaQueryWrapper<>();

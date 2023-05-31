@@ -44,7 +44,7 @@ public class SkuDetailController {
     //3.获取商品价格
     @GetMapping("/getPrice/{skuId}")
     public BigDecimal getPrice(@PathVariable Long skuId) {
-        return skuInfoService.getSkuInfo(skuId).getPrice();
+        return skuInfoService.getInfoFromDB(skuId).getPrice();
     }
 
     //4.获取商品属性和商品id的映射关系

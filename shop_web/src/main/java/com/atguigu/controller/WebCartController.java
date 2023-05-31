@@ -33,7 +33,6 @@ public class WebCartController {
 
     @RequestMapping("/cart.html")
     public String cartHtml() {
-
         return "cart/index";
     }
 }

@@ -66,7 +66,8 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             redisCartInfo.setUpdateTime(new Date());
             //如果商户后台修改了价格 redis里面也要修改
             redisCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(skuId));
-
+            //添加的商品需要进行勾选
+            redisCartInfo.setIsChecked(1);
             //提交
             hashOps.put(skuId.toString(), redisCartInfo);
         }
@@ -99,6 +100,29 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
         return cartInfoList;
     }
 
+    @Override
+    public void checkCart(Long skuId, Integer isChecked, String oneOfUserId) {
+        //取出redis中对应的值
+        BoundHashOperations redisHashOps = getRedisHashOps(oneOfUserId);
+        if (redisHashOps.hasKey(skuId.toString())) {
+            CartInfo cartInfo = (CartInfo) redisHashOps.get(skuId.toString());
+
+            cartInfo.setIsChecked(isChecked);
+
+            redisHashOps.put(skuId.toString(), cartInfo);
+            //设置过期时间
+            redisTemplate.expire(getUserCartKey(oneOfUserId), RedisConst.USER_CART_EXPIRE, TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
+    public void deleteCart(Long skuId, String oneOfUserId) {
+        BoundHashOperations redisHashOps = getRedisHashOps(oneOfUserId);
+        if (redisHashOps.hasKey(skuId.toString())) {
+            redisHashOps.delete(skuId.toString());
+        }
+    }
+
     private List<CartInfo> putNoLoginCart2Login(String userId, String userTempId) {
         //查询所有未登录的
         BoundHashOperations noLoginHashOps = getRedisHashOps(userTempId);
@@ -106,6 +130,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
 
         Map<String, CartInfo> loginCartInfoMap = noLoginCartInfoList.stream().map(cartInfo -> {
             cartInfo.setUserId(userId);
+            cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
             return cartInfo;
         }).collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
 
@@ -135,6 +160,10 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
 
         //将登录购物车转map，再判断未登录是否再登录购物车里
         Map<String, CartInfo> loginCartInfoMap = loginCartInfoList.stream()
+                .map(cartInfo -> {
+                    cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
+                    return cartInfo;
+                })
                 .collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
 
         for (CartInfo noLoginCartInfo : noLoginCartInfoList) {
@@ -146,6 +175,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             } else {
                 //当skuId不同把临时用户id改为登录用户id
                 noLoginCartInfo.setUserId(userId);
+                noLoginCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(noLoginCartInfo.getSkuId()));
                 loginCartInfoMap.put(noLoginSkuId, noLoginCartInfo);
             }
 
