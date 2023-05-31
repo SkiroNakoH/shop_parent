@@ -43,6 +43,16 @@ public class CartInfoController {
         cartInfoService.addCart(skuId, skuNum, oneOfUserId);
     }
 
+    @PostMapping("/addToCart/{skuId}/{skuNum}")
+    public RetVal addToCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request) {
+        String oneOfUserId = AuthContextHolder.getUserId(request);
+        if (StringUtils.isEmpty(oneOfUserId))
+            oneOfUserId = AuthContextHolder.getUserTempId(request);
+
+        cartInfoService.addCart(skuId, skuNum, oneOfUserId);
+        return RetVal.ok();
+    }
+
     @GetMapping("/getCartList")
     public RetVal getCartList(HttpServletRequest request) {
 

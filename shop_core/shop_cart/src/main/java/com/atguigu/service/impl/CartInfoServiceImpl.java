@@ -62,7 +62,9 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
         } else {
             //不是第一次，修改数量
             CartInfo redisCartInfo = (CartInfo) hashOps.get(skuId.toString());
-            redisCartInfo.setSkuNum(redisCartInfo.getSkuNum() + skuNum);
+            if (redisCartInfo.getSkuNum() + skuNum >= 0) {
+                redisCartInfo.setSkuNum(redisCartInfo.getSkuNum() + skuNum);
+            }
             redisCartInfo.setUpdateTime(new Date());
             //如果商户后台修改了价格 redis里面也要修改
             redisCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(skuId));

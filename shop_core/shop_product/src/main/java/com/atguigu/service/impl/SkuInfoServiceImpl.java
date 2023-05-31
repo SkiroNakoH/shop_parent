@@ -88,7 +88,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     }
 
     @Override
-    @ShopCache(value = "skuInfo",redisTime = RedisConst.SKUKEY_TIMEOUT,enableBloom = true)
+    @ShopCache(value = "skuInfo", redisTime = RedisConst.SKUKEY_TIMEOUT, enableBloom = true)
     public SkuInfo getSkuInfo(Long skuId) {
         return getInfoFromDB(skuId);
     }
@@ -108,7 +108,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
             //判断skuid是否在布隆过滤器中
             if (skuBloomFilter.contains(skuId)) {
                 //分布式锁保证线程安全
-                RLock lock = redissonClient.getLock("lock-"+skuId);
+                RLock lock = redissonClient.getLock("lock-" + skuId);
                 try {
                     lock.lock();
                     //从DB中取值
@@ -221,7 +221,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         return skuInfo;
     }
 
-    @Autowired
+    @Override
     public SkuInfo getInfoFromDB(Long skuId) {
         SkuInfo skuInfo = getById(skuId);
 
