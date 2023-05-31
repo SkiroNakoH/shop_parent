@@ -85,11 +85,11 @@ public class CartInfoController {
         return RetVal.ok();
     }
 
-
-  /*  @GetMapping("getSelectedCartInfo/{userId}")
+    //查看被选中的商品列表
+    @GetMapping("getSelectedCartInfo/{userId}")
     public List<CartInfo> getSelectedCartInfo(@PathVariable String userId){
         return cartInfoService.getSelectedCartInfo(userId);
-    }*/
+    }
 
 }
 

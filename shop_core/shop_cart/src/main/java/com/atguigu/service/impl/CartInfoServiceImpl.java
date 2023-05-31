@@ -125,6 +125,15 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
         }
     }
 
+    @Override
+    public List<CartInfo> getSelectedCartInfo(String userId) {
+        BoundHashOperations redisHashOps = getRedisHashOps(userId);
+        List<CartInfo> cartInfoList = redisHashOps.values();
+
+        assert cartInfoList != null;
+        return cartInfoList.stream().collect(Collectors.groupingBy(CartInfo::getIsChecked)).get(1);
+    }
+
     private List<CartInfo> putNoLoginCart2Login(String userId, String userTempId) {
         //查询所有未登录的
         BoundHashOperations noLoginHashOps = getRedisHashOps(userTempId);
