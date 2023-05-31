@@ -19,7 +19,7 @@ public class CodeGenerator {
         GlobalConfig globalConfig = new GlobalConfig();
         //String projectPath = System.getProperty("user.dir");
         //globalConfig.setOutputDir(projectPath + "/src/main/java");
-        globalConfig.setOutputDir("C:\\Users\\SkiroNako\\Desktop\\shop_parent\\shop_core\\shop_cart\\src\\main\\java");
+        globalConfig.setOutputDir("C:\\Users\\SkiroNako\\Desktop\\shop_parent\\shop_core\\shop_order\\src\\main\\java");
         globalConfig.setAuthor("SkiroNakoH");
         //生成后是否打开资源管理器
         globalConfig.setOpen(false);
@@ -65,8 +65,8 @@ public class CodeGenerator {
 //        strategy.setInclude("sku_info","sku_platform_property_value","sku_sale_property_value","sku_image");
 //        strategy.setInclude("base_category_view");
 //        strategy.setInclude("user_info","user_address");
-        strategy.setInclude("cart_info");
-        //strategy.setInclude("order_detail","order_info");
+//        strategy.setInclude("cart_info");
+        strategy.setInclude("order_detail","order_info");
 //        strategy.setInclude("t_order_1","t_order_detail_1");
 //        strategy.setInclude("payment_info");
 //        strategy.setInclude("seckill_product");

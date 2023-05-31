@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-@Component
 @FeignClient(value = "shop-product")
 //@FeignClient(value = "shop-product",fallback = SkuDetailFallBackService.class)
 public interface SkuDetailFeignClient {

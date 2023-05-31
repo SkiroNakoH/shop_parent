@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 public class SkuDetailFallBackService  implements SkuDetailFeignClient {
     @Override
     public SkuInfo getSkuInfo(Long skuId) {

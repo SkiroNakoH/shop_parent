@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Component
 @FeignClient("shop-search")
 public interface SearchFeignClient {
     @GetMapping("/search/onSale/{skuId}")

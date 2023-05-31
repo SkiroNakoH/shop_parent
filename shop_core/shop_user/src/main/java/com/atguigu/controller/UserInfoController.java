@@ -3,16 +3,20 @@ package com.atguigu.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.constant.RedisConst;
+import com.atguigu.entity.UserAddress;
 import com.atguigu.entity.UserInfo;
 import com.atguigu.result.RetVal;
+import com.atguigu.service.UserAddressService;
 import com.atguigu.service.UserInfoService;
 import com.atguigu.util.IpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 public class UserInfoController {
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private UserAddressService userAddressService;
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -67,6 +73,14 @@ public class UserInfoController {
         redisTemplate.delete(userLoginKey);
 
         return RetVal.ok();
+    }
+
+    //3.根据用户id查询用户收货地址
+    @GetMapping("getUserAddressByUserId/{userId}")
+    public List<UserAddress> getUserAddressByUserId(@PathVariable String userId) {
+        LambdaQueryWrapper<UserAddress> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserAddress::getUserId, userId);
+        return userAddressService.list(wrapper);
     }
 }
 
