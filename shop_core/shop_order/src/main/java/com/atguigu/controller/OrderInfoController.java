@@ -83,7 +83,8 @@ public class OrderInfoController {
         map.put("totalMoney", totalMoney);
         //为了防止用户重复提交，需要设置 流水号
         String tradeNo = UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set("user:" + userId + ":tradeNo", tradeNo);
+        String redisTradeNoKey = "user:" + userId + ":tradeNo";
+        redisTemplate.opsForValue().set(redisTradeNoKey, tradeNo);
 
         //将流水号 返回给前端
         map.put("tradeNo", tradeNo);
@@ -97,13 +98,15 @@ public class OrderInfoController {
         String userId = UserIdUtil.getUserId(request, redisTemplate);
 
         //从redis中获取到流水号，判断是否一致
-        String tradeNoKey = "user:" + userId + ":tradeNo";
-        if (!tradeNo.equals(redisTemplate.opsForValue().get(tradeNo)))
+        String redisTradeNoKey = "user:" + userId + ":tradeNo";
+
+        String redisTradeNo = (String) redisTemplate.opsForValue().get(redisTradeNoKey);
+        if (!tradeNo.equals(redisTradeNo))
             return RetVal.fail().message("不能重复提交订单");
 
         //核对订单中商品价格和库存
         StringBuilder checkOrderMessage = orderInfoService.checkPriceAndStock(orderInfo);
-        if (StringUtils.isEmpty(checkOrderMessage.toString())) {
+        if (!StringUtils.isEmpty(checkOrderMessage.toString())) {
             return RetVal.fail().message(checkOrderMessage.append("，需要刷新页面").toString());
         }
 
@@ -111,7 +114,7 @@ public class OrderInfoController {
         Long orderId = orderInfoService.saveOrderInfo(orderInfo,userId);
 
         //删除redis中的流水号
-        redisTemplate.delete(tradeNoKey);
+        redisTemplate.delete(redisTradeNoKey);
 
         return RetVal.ok(orderId);
     }

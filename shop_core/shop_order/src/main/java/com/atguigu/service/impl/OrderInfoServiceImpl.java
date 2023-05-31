@@ -7,6 +7,7 @@ import com.atguigu.feign.SkuDetailFeignClient;
 import com.atguigu.mapper.OrderInfoMapper;
 import com.atguigu.service.OrderDetailService;
 import com.atguigu.service.OrderInfoService;
+import com.atguigu.util.HttpClientUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     }
 
                     //todo： 库存校验
+                    String url = "http://localhost:8100/hasStock?skuId=" + orderDetail.getSkuId() + "&num=" + orderDetail.getSkuNum();
+                    String result = HttpClientUtil.doGet(url);
+                    if ("0".equals(result)) {
+                        //没有库存
+                        sb.append(orderDetail.getSkuName() + "已售空");
+                    }
                 }
             }
         }
