@@ -36,6 +36,12 @@
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
             <scope>provided</scope>
         </dependency>
+<!--        	数据信息的校验-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
     </dependencies>
 
 

@@ -65,7 +65,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             if (redisCartInfo.getSkuNum() + skuNum >= 0) {
                 redisCartInfo.setSkuNum(redisCartInfo.getSkuNum() + skuNum);
             }
-            redisCartInfo.setUpdateTime(new Date());
+//            redisCartInfo.setUpdateTime(new Date());
             //如果商户后台修改了价格 redis里面也要修改
             redisCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(skuId));
             //添加的商品需要进行勾选
@@ -96,6 +96,15 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             } else {
                 //登录的购物车没货物，只需要该未登录的购物车名称为登录用户名
                 return putNoLoginCart2Login(userId, userTempId);
+            }
+        }
+        //3.已登录，未点添加购物车按钮直接访问购物车----此时，无userTempId
+        if (!StringUtils.isEmpty(userId) && StringUtils.isEmpty(userTempId)) {
+            //查询所有已登录购物项
+            BoundHashOperations hashOps = getRedisHashOps(userId);
+            Set keys = hashOps.keys();
+            if (!CollectionUtils.isEmpty(keys)) {
+                return (List<CartInfo>)hashOps.values();
             }
         }
 
@@ -141,7 +150,9 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
 
         Map<String, CartInfo> loginCartInfoMap = noLoginCartInfoList.stream().map(cartInfo -> {
             cartInfo.setUserId(userId);
-            cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
+//            cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
+            //判断价格波动
+            comparePrice(cartInfo);
             return cartInfo;
         }).collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
 
@@ -158,6 +169,19 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
                 .collect(Collectors.toList());
     }
 
+    //比较价格是否出现偏差
+    private void comparePrice(CartInfo cartInfo) {
+        Long skuId = cartInfo.getSkuId();
+        //查询现在的价格
+        BigDecimal dbPrice = skuDetailFeignClient.getPrice(skuId);
+        //查出redsiPrice
+        BigDecimal redisPrice = cartInfo.getCartPrice();
+        if (!dbPrice.equals(redisPrice)) {
+            //更新价格 然后同步到redis当中
+            cartInfo.setRealTimePrice(dbPrice);
+        }
+    }
+
 
     //合并购物车
     private List<CartInfo> mergeCartInfoList(String userId, String userTempId) {
@@ -172,7 +196,8 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
         //将登录购物车转map，再判断未登录是否再登录购物车里
         Map<String, CartInfo> loginCartInfoMap = loginCartInfoList.stream()
                 .map(cartInfo -> {
-                    cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
+                    comparePrice(cartInfo);
+//                    cartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(cartInfo.getSkuId()));
                     return cartInfo;
                 })
                 .collect(Collectors.toMap(cartInfo -> cartInfo.getSkuId().toString(), cartInfo -> cartInfo, (a, b) -> a));
@@ -186,7 +211,8 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             } else {
                 //当skuId不同把临时用户id改为登录用户id
                 noLoginCartInfo.setUserId(userId);
-                noLoginCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(noLoginCartInfo.getSkuId()));
+                comparePrice(noLoginCartInfo);
+//                noLoginCartInfo.setRealTimePrice(skuDetailFeignClient.getPrice(noLoginCartInfo.getSkuId()));
                 loginCartInfoMap.put(noLoginSkuId, noLoginCartInfo);
             }
 

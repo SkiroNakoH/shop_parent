@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -38,11 +40,14 @@ public class OrderInfo implements Serializable {
     /**
      * 收货人
      */
+    @NotBlank(message = "收货人不能为空")
     private String consignee;
 
     /**
      * 收件人电话
      */
+    @Length(min = 7,max = 11,message = "手机号格式有误")
+    @NotBlank(message = "收货人电话不能为空")
     private String consigneeTel;
 
     /**

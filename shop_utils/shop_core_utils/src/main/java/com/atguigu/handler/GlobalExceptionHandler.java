@@ -3,9 +3,16 @@ package com.atguigu.handler;
 import com.atguigu.exception.GmallException;
 import com.atguigu.result.RetVal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理类
@@ -31,5 +38,13 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public RetVal error(GmallException e){
         return RetVal.fail(e.getMessage());
+    }
+
+    @ExceptionHandler(BindException.class)
+    @ResponseBody
+    public RetVal error(BindException e){
+        BindingResult bindingResult = e.getBindingResult();
+        List<ObjectError> allErrors = bindingResult.getAllErrors();
+        return RetVal.fail(allErrors.stream().map(ObjectError::getDefaultMessage).collect(Collectors.toList()));
     }
 }
