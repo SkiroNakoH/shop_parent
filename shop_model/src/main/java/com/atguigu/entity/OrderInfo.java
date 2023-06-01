@@ -27,7 +27,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("order_info")
-public class OrderInfo implements Serializable {
+public class  OrderInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

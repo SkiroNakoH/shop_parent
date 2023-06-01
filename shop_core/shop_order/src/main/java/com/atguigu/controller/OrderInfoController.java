@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -93,7 +94,7 @@ public class OrderInfoController {
     }
 
     @PostMapping("/submitOrder")
-    public RetVal submitOrder(@RequestBody OrderInfo orderInfo, HttpServletRequest request) {
+    public RetVal submitOrder(@RequestBody @Valid OrderInfo orderInfo, HttpServletRequest request) {
         String tradeNo = request.getParameter("tradeNo");
         String userId = UserIdUtil.getUserId(request, redisTemplate);
 
@@ -118,5 +119,11 @@ public class OrderInfoController {
 
         return RetVal.ok(orderId);
     }
+
+    @PostMapping("mySubmitOrder")
+    public void mySubmitOrder(@Valid OrderInfo orderInfo){
+        System.out.println(orderInfo);
+    }
+
 }
 
