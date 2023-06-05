@@ -37,10 +37,10 @@ public class CodeGenerator {
 
         // 3、数据源配置
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setUrl("jdbc:mysql://192.168.112.128:3306/shop_order?serverTimezone=GMT%2B8&useSSL=false");
+        dataSourceConfig.setUrl("jdbc:mysql://192.168.112.128:3316/db_order?serverTimezone=GMT%2B8&useSSL=false");
         dataSourceConfig.setDriverName("com.mysql.jdbc.Driver");
         dataSourceConfig.setUsername("root");
-        dataSourceConfig.setPassword("root");
+        dataSourceConfig.setPassword("123");
         dataSourceConfig.setDbType(DbType.MYSQL);
         autoGenerator.setDataSource(dataSourceConfig);
 
@@ -66,7 +66,7 @@ public class CodeGenerator {
 //        strategy.setInclude("base_category_view");
 //        strategy.setInclude("user_info","user_address");
 //        strategy.setInclude("cart_info");
-        strategy.setInclude("order_detail","order_info");
+//        strategy.setInclude("order_detail","order_info");
 //        strategy.setInclude("t_order_1","t_order_detail_1");
 //        strategy.setInclude("payment_info");
 //        strategy.setInclude("seckill_product");
