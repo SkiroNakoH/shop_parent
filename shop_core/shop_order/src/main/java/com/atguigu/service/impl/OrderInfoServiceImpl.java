@@ -105,4 +105,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
         return orderId;
     }
+
+    @Override
+    public OrderInfo getOrderInfoAndOrderDetail(Long orderId) {
+        return baseMapper.getOrderInfoAndOrderDetail(orderId);
+    }
 }

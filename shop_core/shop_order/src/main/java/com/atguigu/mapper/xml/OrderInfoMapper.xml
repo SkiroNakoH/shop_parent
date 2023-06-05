@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mapper.OrderInfoMapper">
+
+    <resultMap id="getOrderInfoMap" type="com.atguigu.entity.OrderInfo" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="orderDetailList" ofType="com.atguigu.entity.OrderDetail" autoMapping="true">
+            <id property="id" column="order_detail_id"/>
+        </collection>
+    </resultMap>
+
+    <select id="getOrderInfoAndOrderDetail" resultMap="getOrderInfoMap">
+        SELECT
+        a.*,
+        b.id order_detail_id,
+        b.order_id,
+        b.sku_id,
+        b.sku_name,
+        b.img_url,
+        b.order_price,
+        b.sku_num
+        FROM
+        order_info a
+        LEFT JOIN order_detail b ON a.id = b.order_id
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and  a.id = #{orderId}
+            </if>
+        </where>
+
+    </select>
+</mapper>

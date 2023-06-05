@@ -125,5 +125,10 @@ public class OrderInfoController {
         System.out.println(orderInfo);
     }
 
+    @GetMapping("/getOrderInfoAndOrderDetail/{orderId}")
+    public OrderInfo getOrderInfoAndOrderDetail(@PathVariable Long orderId) {
+        return orderInfoService.getOrderInfoAndOrderDetail(orderId);
+    }
+
 }
 

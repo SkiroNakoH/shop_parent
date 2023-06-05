@@ -1,5 +1,6 @@
 package com.atguigu.feign;
 
+import com.atguigu.entity.OrderInfo;
 import com.atguigu.entity.UserAddress;
 import com.atguigu.result.RetVal;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -12,4 +13,7 @@ import java.util.List;
 public interface OrderFeignClient {
     @GetMapping("/order/confirm")
     public RetVal confirm();
+
+    @GetMapping("/order/getOrderInfoAndOrderDetail/{orderId}")
+    public OrderInfo getOrderInfoAndOrderDetail(@PathVariable Long orderId);
 }
