@@ -105,14 +105,14 @@ public class OrderInfoController {
         if (!tradeNo.equals(redisTradeNo))
             return RetVal.fail().message("不能重复提交订单");
 
-        //核对订单中商品价格和库存
-        StringBuilder checkOrderMessage = orderInfoService.checkPriceAndStock(orderInfo);
+        //todo: 关闭了核对订单中商品价格和库存
+    /*    StringBuilder checkOrderMessage = orderInfoService.checkPriceAndStock(orderInfo);
         if (!StringUtils.isEmpty(checkOrderMessage.toString())) {
             return RetVal.fail().message(checkOrderMessage.append("，需要刷新页面").toString());
         }
-
+*/
         //保存订单
-        Long orderId = orderInfoService.saveOrderInfo(orderInfo,userId);
+        Long orderId = orderInfoService.saveOrderInfo(orderInfo, userId);
 
         //删除redis中的流水号
         redisTemplate.delete(redisTradeNoKey);
@@ -121,7 +121,7 @@ public class OrderInfoController {
     }
 
     @PostMapping("mySubmitOrder")
-    public void mySubmitOrder(@Valid OrderInfo orderInfo){
+    public void mySubmitOrder(@Valid OrderInfo orderInfo) {
         System.out.println(orderInfo);
     }
 

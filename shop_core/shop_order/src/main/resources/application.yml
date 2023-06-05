@@ -44,4 +44,4 @@ spring:
     time-zone: GMT+8
 cancel:
   order:
-    delay: 10000
+    delay: 300000000

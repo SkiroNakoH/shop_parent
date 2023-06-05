@@ -1,5 +1,6 @@
 package com.atguigu.service.impl;
 
+import com.atguigu.constant.MqConst;
 import com.atguigu.entity.OrderDetail;
 import com.atguigu.entity.OrderInfo;
 import com.atguigu.enums.OrderStatus;
@@ -9,11 +10,14 @@ import com.atguigu.service.OrderDetailService;
 import com.atguigu.service.OrderInfoService;
 import com.atguigu.util.HttpClientUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +36,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private SkuDetailFeignClient skuDetailFeignClient;
     @Autowired
     private OrderDetailService orderDetailService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Value("${cancel.order.delay}")
+    private Integer cancelOrderDelay;
 
     @Override
     public StringBuilder checkPriceAndStock(OrderInfo orderInfo) {
@@ -88,6 +96,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
             orderDetailService.saveBatch(orderDetailList);
         }
+
+        //订单超时自动取消
+        rabbitTemplate.convertAndSend(MqConst.CANCEL_ORDER_EXCHANGE, MqConst.CANCEL_ORDER_ROUTE_KEY, orderId, correlationData -> {
+            correlationData.getMessageProperties().setDelay(cancelOrderDelay);
+            return correlationData;
+        });
 
         return orderId;
     }
