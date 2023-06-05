@@ -41,89 +41,27 @@ spring:
 #    password: root
   shardingsphere:
     datasource:
-      names: ds-1,ds-1-read1,ds-1-read2,ds-2,ds-2-read1,ds-2-read2,ds-3,ds-3-read1,ds-3-read2
-      #第一组
+      names: ds-1,ds-2,ds-3
       ds-1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3316/db_order_1?characterEncoding=utf-8&useSSL=false
+        url: jdbc:mysql://192.168.112.128:3316/db_order?characterEncoding=utf-8&useSSL=false
         username: root
         password: 123
-      ds-1-read1:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3317/db_order_1?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      ds-1-read2:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3318/db_order_1?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      #第二组
       ds-2:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3316/db_order_2?characterEncoding=utf-8&useSSL=false
+        url: jdbc:mysql://192.168.112.128:3316/db_order?characterEncoding=utf-8&useSSL=false
         username: root
         password: 123
-      ds-2-read1:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3317/db_order_2?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      ds-2-read2:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3318/db_order_2?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      #第一组
       ds-3:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3316/db_order_3?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      ds-3-read1:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3317/db_order_3?characterEncoding=utf-8&useSSL=false
-        username: root
-        password: 123
-      ds-3-read2:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.112.128:3318/db_order_3?characterEncoding=utf-8&useSSL=false
+        url: jdbc:mysql://192.168.112.128:3316/db_order?characterEncoding=utf-8&useSSL=false
         username: root
         password: 123
     #分库分表策略
     rules:
-      readwrite-splitting:
-        data-sources:
-          order-rw-1:
-            type: static
-            props:
-              write-data-source-name: ds-1
-              read-data-source-names: ds-1-read1,ds-1-read2
-            load-balancer-name: read-lb
-          order-rw-2:
-            type: static
-            props:
-              write-data-source-name: ds-2
-              read-data-source-names: ds-2-read1,ds-2-read2
-            load-balancer-name: read-lb
-          order-rw-3:
-            type: static
-            props:
-              write-data-source-name: ds-3
-              read-data-source-names: ds-3-read1,ds-3-read2
-            load-balancer-name: read-lb
-        load-balancers:
-          read-lb:
-            type: ROUND_ROBIN
       sharding:
         default-database-strategy:
           standard:
