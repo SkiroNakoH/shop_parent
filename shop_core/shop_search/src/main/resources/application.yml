@@ -16,6 +16,10 @@ spring:
     port: 5672
     username: admin
     password: 123
+    #开启手动签收模式
+    listener:
+      simple:
+        acknowledge-mode: manual
   redis:
     host: 192.168.112.128
     port: 6389

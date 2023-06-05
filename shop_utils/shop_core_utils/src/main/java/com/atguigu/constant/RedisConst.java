@@ -53,5 +53,9 @@ public class RedisConst {
     //用户锁定时间 单位：秒
     public static final int PREPARE_SECKILL_LOCK_TIME = 60 * 60 * 1;
 
-
+    //上架|下架商品重试
+    public static final String  RETRY_ONSALE_KEY = "retry:onsale:key:";
+    public static final String  RETRY_OFFSALE_KEY = "retry:offsale:key:";
+    //上架|下架商品重试次数
+    public static final Long RETRY_COUNT = 3L;
 }

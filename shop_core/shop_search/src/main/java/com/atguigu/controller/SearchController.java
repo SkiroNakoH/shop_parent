@@ -1,11 +1,13 @@
 package com.atguigu.controller;
 
+import com.atguigu.constant.MqConst;
 import com.atguigu.result.RetVal;
 import com.atguigu.search.Product;
 import com.atguigu.search.SearchBrandVo;
 import com.atguigu.search.SearchParam;
 import com.atguigu.search.SearchResponseVo;
 import com.atguigu.service.ProductSearchService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,8 @@ public class SearchController {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private ProductSearchService productSearchService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @GetMapping("/create")
     public String createIndex() {
@@ -29,13 +33,15 @@ public class SearchController {
 
     @GetMapping("/onSale/{skuId}")
     public RetVal onSale(@PathVariable Long skuId){
-        productSearchService.onSale(skuId);
+//        productSearchService.onSale(skuId);
+        rabbitTemplate.convertAndSend(MqConst.ON_OFF_SALE_EXCHANGE,MqConst.ON_SALE_ROUTING_KEY,skuId);
         return RetVal.ok();
     }
 
     @GetMapping("/offSale/{skuId}")
     public RetVal offSale(@PathVariable Long skuId){
-        productSearchService.offSale(skuId);
+//        productSearchService.offSale(skuId);
+        rabbitTemplate.convertAndSend(MqConst.ON_OFF_SALE_EXCHANGE,MqConst.OFF_SALE_ROUTING_KEY,skuId);
         return RetVal.ok();
     }
 
