@@ -25,4 +25,12 @@ public class WebPaymentController {
         model.addAttribute("orderInfo", orderInfo);
         return "payment/pay";
     }
+
+    //同步回调地址 跳转到支付成功页面  http://payment.gmall.com/alipay/success.html
+    @RequestMapping("/alipay/success.html")
+    public String successHtml() {
+        //同步返回的不可靠性，支付结果必须以异步通知或查询接口返回为准
+        return "payment/success";
+    }
+
 }

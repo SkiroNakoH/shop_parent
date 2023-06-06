@@ -23,10 +23,12 @@ public class OrderConsumer {
     public void cancelOrder(Long orderId, Channel channel, Message message) {
         if (orderId != null) {
             OrderInfo orderInfo = orderInfoService.getById(orderId);
-            orderInfo.setOrderStatus(OrderStatus.CLOSED.name());
-            orderInfo.setProcessStatus(ProcessStatus.CLOSED.name());
+            if (OrderStatus.UNPAID.name().equals(orderInfo.getOrderStatus())) {
+                orderInfo.setOrderStatus(OrderStatus.CLOSED.name());
+                orderInfo.setProcessStatus(ProcessStatus.CLOSED.name());
 
-            orderInfoService.updateById(orderInfo);
+                orderInfoService.updateById(orderInfo);
+            }
         }
         channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
 

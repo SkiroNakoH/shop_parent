@@ -40,6 +40,7 @@ public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, Payme
         if(orderInfo == null)
             return null;
 
+        //todo: 保存支付相关的信息
         //调用支付宝提供的接口，请求支付二维码
 //        AlipayClient alipayClient = new DefaultAlipayClient("https://openapi.alipay.com/gateway.do", "app_id", "your private_key", "json", "GBK", "alipay_public_key", "RSA2");
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
