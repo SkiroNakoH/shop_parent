@@ -6,15 +6,23 @@ import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.atguigu.config.AlipayConfig;
+import com.atguigu.constant.MqConst;
 import com.atguigu.entity.OrderInfo;
 import com.atguigu.entity.PaymentInfo;
+import com.atguigu.enums.PaymentStatus;
+import com.atguigu.enums.PaymentType;
 import com.atguigu.feign.OrderFeignClient;
 import com.atguigu.mapper.PaymentInfoMapper;
 import com.atguigu.service.PaymentInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.SneakyThrows;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.Map;
 
 /**
  * <p>
@@ -27,20 +35,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, PaymentInfo> implements PaymentInfoService {
     @Autowired
-    private AlipayConfig alipayConfig;
-    @Autowired
     private AlipayClient alipayClient;
     @Autowired
     private OrderFeignClient orderFeignClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @SneakyThrows
     @Override
     public String createQrCode(Long orderId) {
         OrderInfo orderInfo = orderFeignClient.getOrderInfoAndOrderDetail(orderId);
-        if(orderInfo == null)
+        if (orderInfo == null)
             return null;
 
-        //todo: 保存支付相关的信息
+        // 保存支付相关的信息
+        savePaymentInfo(orderInfo);
         //调用支付宝提供的接口，请求支付二维码
 //        AlipayClient alipayClient = new DefaultAlipayClient("https://openapi.alipay.com/gateway.do", "app_id", "your private_key", "json", "GBK", "alipay_public_key", "RSA2");
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
@@ -86,5 +95,52 @@ public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, Payme
             System.out.println("调用失败");
             return null;
         }
+    }
+
+    @Override
+    public void updatePayment(Map<String, String> alipayParam) {
+        String outTradeNo = alipayParam.get("out_trade_no");
+        PaymentInfo paymentInfo = getPaymentInfoByOutTradeNo(outTradeNo);
+
+        if (paymentInfo == null)
+            return;
+
+        paymentInfo.setTradeNo(alipayParam.get("trade_no"));
+        paymentInfo.setPaymentStatus(PaymentStatus.PAID.name());
+        paymentInfo.setCallbackTime(new Date());
+        paymentInfo.setCallbackContent(JSONObject.toJSONString(alipayParam));
+        updateById(paymentInfo);
+
+        //通过mq，百分百投递，修改订单的状态
+        rabbitTemplate.convertAndSend(MqConst.PAY_ORDER_EXCHANGE,MqConst.PAY_ORDER_ROUTE_KEY,paymentInfo.getOrderId());
+    }
+
+    private PaymentInfo getPaymentInfoByOutTradeNo(String outTradeNo) {
+        LambdaQueryWrapper<PaymentInfo> paymentInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        paymentInfoLambdaQueryWrapper.eq(PaymentInfo::getOutTradeNo, outTradeNo);
+        //支付方式
+        paymentInfoLambdaQueryWrapper.eq(PaymentInfo::getPaymentType, PaymentType.ALIPAY);
+        PaymentInfo paymentInfo = getOne(paymentInfoLambdaQueryWrapper);
+        return paymentInfo;
+    }
+
+    //保存订单，防止跟用户扯皮
+    private void savePaymentInfo(OrderInfo orderInfo) {
+        LambdaQueryWrapper<PaymentInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PaymentInfo::getOrderId, orderInfo.getId());
+        wrapper.eq(PaymentInfo::getPaymentType, PaymentType.ALIPAY.name());
+        int count = count(wrapper);
+        if (count > 0) {
+            return;
+        }
+        PaymentInfo paymentInfo = new PaymentInfo();
+        paymentInfo.setOutTradeNo(orderInfo.getOutTradeNo());
+        paymentInfo.setOrderId(orderInfo.getId() + "");
+        paymentInfo.setPaymentType(PaymentType.ALIPAY.name());
+        paymentInfo.setPaymentMoney(orderInfo.getTotalMoney());
+        paymentInfo.setPaymentContent(orderInfo.getTradeBody());
+        paymentInfo.setPaymentStatus(PaymentStatus.UNPAID.name());
+        paymentInfo.setCreateTime(new Date());
+        save(paymentInfo);
     }
 }

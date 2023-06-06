@@ -1,9 +1,11 @@
 package com.atguigu.service;
 
 import com.atguigu.entity.OrderInfo;
+import com.atguigu.enums.ProcessStatus;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -20,4 +22,10 @@ public interface OrderInfoService extends IService<OrderInfo> {
     Long saveOrderInfo(OrderInfo orderInfo, String userId);
 
     OrderInfo getOrderInfoAndOrderDetail(Long orderId);
+
+    void sendOrderInfo2Ware4UpdateStock(OrderInfo orderInfo);
+
+    void updateOrderStatus(OrderInfo orderInfo, ProcessStatus paid);
+
+    String splitOrder(Map<String, String> map);
 }

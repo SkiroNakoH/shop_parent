@@ -130,5 +130,11 @@ public class OrderInfoController {
         return orderInfoService.getOrderInfoAndOrderDetail(orderId);
     }
 
+    //库存系统调用，进行拆单   http://order.gmall.com/order/splitOrder
+    @PostMapping("/splitOrder")
+    public String splitOrder(@RequestParam Map<String, String> map) {
+        return orderInfoService.splitOrder(map);
+    }
+
 }
 

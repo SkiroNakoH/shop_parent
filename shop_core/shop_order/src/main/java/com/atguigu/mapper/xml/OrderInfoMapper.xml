@@ -8,6 +8,7 @@
         <id column="id" property="id"/>
         <collection property="orderDetailList" ofType="com.atguigu.entity.OrderDetail" autoMapping="true">
             <id property="id" column="order_detail_id"/>
+            <result property="imgUrl" column="order_detail_img_url"/>
         </collection>
     </resultMap>
 
@@ -18,7 +19,7 @@
         b.order_id,
         b.sku_id,
         b.sku_name,
-        b.img_url,
+        b.img_url order_detail_img_url,
         b.order_price,
         b.sku_num
         FROM

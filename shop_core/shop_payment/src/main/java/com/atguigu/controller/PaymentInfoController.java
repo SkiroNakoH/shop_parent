@@ -10,6 +10,7 @@ import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.atguigu.config.AlipayConfig;
 import com.atguigu.service.PaymentInfoService;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,20 +39,25 @@ public class PaymentInfoController {
     // 异步回调地址  内网穿透  http://3yrmq4.natappfree.cc/payment/async/notify
     @SneakyThrows
     @PostMapping("/async/notify")
-//    public String asyncNotify(@RequestParam Map<String,String> alipayParam) {
+    //上线 支付宝用
+    public String asyncNotify(@RequestParam Map<String,String> alipayParam) {
 //      JSONObject.toJSONString(alipayParam)
-    public String asyncNotify(@RequestBody Map<String,String> alipayParam) {
+    //测试开发用
+//    public String asyncNotify(@RequestBody Map<String,String> alipayParam) {
 
-        //支付成功，验证签名
+        //支付成功，验证签名 防止被第三方拦截修改
 //        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, ALIPAY_PUBLIC_KEY, CHARSET, SIGN_TYPE) //调用SDK验证签名
         boolean signVerified = AlipaySignature.rsaCheckV1(alipayParam, AlipayConfig.alipay_public_key, AlipayConfig.charset, AlipayConfig.sign_type); //调用SDK验证签名
         if(signVerified){
             // TODO 验签成功后，按照支付结果异步通知中的描述，对支付结果中的业务内容进行二次校验，校验成功后在response中返回success并继续商户自身业务处理，校验失败返回failure
-            return "sucess";
+            //修改支付状态、订单状态、库存数量、会员积分等...
+            paymentInfoService.updatePayment(alipayParam);
+//            return "sucess";
         }else{
             // TODO 验签失败则记录异常日志，并在response中返回failure.
-            return "failure";
+//            return "failure";
         }
+            return "failure";
 
     }
 }
