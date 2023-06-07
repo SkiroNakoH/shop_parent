@@ -18,4 +18,10 @@ public interface PaymentInfoService extends IService<PaymentInfo> {
     String createQrCode(Long orderId);
 
     void updatePayment(Map<String, String> alipayParam);
+
+    boolean refund(Long orderId);
+
+    Boolean queryAlipayTrade(Long orderId);
+
+    Boolean closeAlipayTrade(Long orderId);
 }

@@ -35,6 +35,9 @@ public class OrderConsumer {
                 orderInfo.setProcessStatus(ProcessStatus.CLOSED.name());
 
                 orderInfoService.updateById(orderInfo);
+
+                //todo 支付表状态改为关闭，
+                //todo  如果支付宝里有交易记录，通知支付宝关闭此交易
             }
         }
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
@@ -49,6 +52,7 @@ public class OrderConsumer {
         if (orderId != null) {
             OrderInfo orderInfo = orderInfoService.getOrderInfoAndOrderDetail(orderId);
             if (orderInfo != null && OrderStatus.UNPAID.name().equals(orderInfo.getOrderStatus())) {
+
                 //修改订单状态
                 orderInfoService.updateOrderStatus(orderInfo,ProcessStatus.PAID);
 

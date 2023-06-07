@@ -40,25 +40,44 @@ public class PaymentInfoController {
     @SneakyThrows
     @PostMapping("/async/notify")
     //上线 支付宝用
-    public String asyncNotify(@RequestParam Map<String,String> alipayParam) {
+    public String asyncNotify(@RequestParam Map<String, String> alipayParam) {
 //      JSONObject.toJSONString(alipayParam)
-    //测试开发用
+        //测试开发用
 //    public String asyncNotify(@RequestBody Map<String,String> alipayParam) {
 
         //支付成功，验证签名 防止被第三方拦截修改
 //        boolean signVerified = AlipaySignature.rsaCheckV1(paramsMap, ALIPAY_PUBLIC_KEY, CHARSET, SIGN_TYPE) //调用SDK验证签名
         boolean signVerified = AlipaySignature.rsaCheckV1(alipayParam, AlipayConfig.alipay_public_key, AlipayConfig.charset, AlipayConfig.sign_type); //调用SDK验证签名
-        if(signVerified){
-            // TODO 验签成功后，按照支付结果异步通知中的描述，对支付结果中的业务内容进行二次校验，校验成功后在response中返回success并继续商户自身业务处理，校验失败返回failure
+        if (signVerified) {
+            //todo 根据trade_status 判断是否需要执行业务
+            // 验签成功后，按照支付结果异步通知中的描述，对支付结果中的业务内容进行二次校验，校验成功后在response中返回success并继续商户自身业务处理，校验失败返回failure
             //修改支付状态、订单状态、库存数量、会员积分等...
             paymentInfoService.updatePayment(alipayParam);
-//            return "sucess";
-        }else{
-            // TODO 验签失败则记录异常日志，并在response中返回failure.
-//            return "failure";
-        }
+            return "sucess";
+        } else {
+            //  验签失败则记录异常日志，并在response中返回failure.
             return "failure";
+        }
+//            return "failure";
 
+    }
+
+    //退款接口
+    @GetMapping("/refund/{orderId}")
+    public Boolean refund(@PathVariable Long orderId) {
+        return paymentInfoService.refund(orderId);
+    }
+
+    //查询支付宝中是否有交易记录
+    @GetMapping("/queryAlipayTrade/{orderId}")
+    public Boolean queryAlipayTrade(@PathVariable Long orderId) {
+        return paymentInfoService.queryAlipayTrade(orderId);
+    }
+
+    //    关闭交易
+    @GetMapping("/closeAlipayTrade/{orderId}")
+    public Boolean closeAlipayTrade(@PathVariable Long orderId) {
+        return paymentInfoService.closeAlipayTrade(orderId);
     }
 }
 

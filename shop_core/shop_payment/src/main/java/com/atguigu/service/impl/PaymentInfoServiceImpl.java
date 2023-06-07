@@ -3,8 +3,14 @@ package com.atguigu.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeCloseRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayTradeCloseResponse;
 import com.alipay.api.response.AlipayTradePagePayResponse;
+import com.alipay.api.response.AlipayTradeQueryResponse;
+import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.atguigu.config.AlipayConfig;
 import com.atguigu.constant.MqConst;
 import com.atguigu.entity.OrderInfo;
@@ -112,7 +118,95 @@ public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, Payme
         updateById(paymentInfo);
 
         //通过mq，百分百投递，修改订单的状态
-        rabbitTemplate.convertAndSend(MqConst.PAY_ORDER_EXCHANGE,MqConst.PAY_ORDER_ROUTE_KEY,paymentInfo.getOrderId());
+        rabbitTemplate.convertAndSend(MqConst.PAY_ORDER_EXCHANGE, MqConst.PAY_ORDER_ROUTE_KEY, paymentInfo.getOrderId());
+    }
+
+    //退款接口
+    @SneakyThrows
+    @Override
+    public boolean refund(Long orderId) {
+        OrderInfo orderInfo = orderFeignClient.getOrderInfoAndOrderDetail(orderId);
+        if (orderInfo == null)
+            return false;
+
+        AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
+        JSONObject bizContent = new JSONObject();
+        String outTradeNo = orderInfo.getOutTradeNo();
+        bizContent.put("out_trade_no", outTradeNo);
+        bizContent.put("refund_amount", orderInfo.getTotalMoney());
+//        bizContent.put("out_request_no", "HZ01RF001");
+
+        //// 返回参数选项，按需传入
+        /*//JSONArray queryOptions = new JSONArray();
+        //queryOptions.add("refund_detail_item_list");
+        //bizContent.put("query_options", queryOptions);*/
+
+        request.setBizContent(bizContent.toString());
+        AlipayTradeRefundResponse response = alipayClient.execute(request);
+        if (response.isSuccess()) {
+            //修改支付状态 -->    改为订单关闭
+            PaymentInfo paymentInfo = getPaymentInfoByOutTradeNo(outTradeNo);
+            if (paymentInfo != null) {
+                paymentInfo.setPaymentStatus(PaymentStatus.ClOSED.name());
+                updateById(paymentInfo);
+            }
+
+            System.out.println("调用成功");
+            return true;
+        } else {
+            System.out.println("调用失败");
+            return false;
+        }
+    }
+
+    //查询支付宝中是否有交易记录
+    @SneakyThrows
+    @Override
+    public Boolean queryAlipayTrade(Long orderId) {
+        String outTradeNo = getOutTradeNo(orderId);
+        if (outTradeNo == null) return false;
+
+        AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", outTradeNo);
+
+        request.setBizContent(bizContent.toString());
+        AlipayTradeQueryResponse response = alipayClient.execute(request);
+
+        if (response.isSuccess()) {
+            System.out.println("订单存在");
+            return true;
+        } else {
+            System.out.println("订单不存在");
+            return false;
+        }
+    }
+
+    //    关闭交易
+    @SneakyThrows
+    @Override
+    public Boolean closeAlipayTrade(Long orderId) {
+        String outTradeNo = getOutTradeNo(orderId);
+        if (outTradeNo == null) return false;
+
+        AlipayTradeCloseRequest request = new AlipayTradeCloseRequest();
+        JSONObject bizContent = new JSONObject();
+
+        bizContent.put("out_trade_no", outTradeNo);
+        request.setBizContent(bizContent.toString());
+        AlipayTradeCloseResponse response = alipayClient.execute(request);
+        if (response.isSuccess()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private String getOutTradeNo(Long orderId) {
+        OrderInfo orderInfo = orderFeignClient.getOrderInfoAndOrderDetail(orderId);
+        if (orderInfo == null)
+            return null;
+        return orderInfo.getOutTradeNo();
     }
 
     private PaymentInfo getPaymentInfoByOutTradeNo(String outTradeNo) {
