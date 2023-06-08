@@ -1,8 +1,10 @@
 package com.atguigu.service;
 
 import com.atguigu.entity.SeckillProduct;
+import com.atguigu.result.RetVal;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -18,4 +20,6 @@ public interface SeckillProductService extends IService<SeckillProduct> {
     List<SeckillProduct> queryAllSeckill();
 
     SeckillProduct querySecKillBySkuId(Long skuId);
+
+    RetVal generateSeckillCode(Long skuId, HttpServletRequest request);
 }
