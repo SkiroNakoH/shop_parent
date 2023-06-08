@@ -40,9 +40,11 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
     @Override
     public void addCart(Long skuId, Integer skuNum, String oneOfUserId) {
         BoundHashOperations hashOps = getRedisHashOps(oneOfUserId);
+        String skuStr = skuId.toString();
 
+        //todo 总是判定为第一次
         //第一次
-        if (!hashOps.hasKey(skuId.toString())) {
+        if (!hashOps.hasKey(skuStr)) {
             //新增
             CartInfo cartInfo = new CartInfo();
             SkuInfo skuInfo = skuDetailFeignClient.getSkuInfo(skuId);
@@ -57,11 +59,11 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             cartInfo.setUpdateTime(new Date());
             //最新添加的商品需要进行勾选
             cartInfo.setIsChecked(1);
-            hashOps.put(skuId.toString(), cartInfo);
+            hashOps.put(skuStr, cartInfo);
 
         } else {
             //不是第一次，修改数量
-            CartInfo redisCartInfo = (CartInfo) hashOps.get(skuId.toString());
+            CartInfo redisCartInfo = (CartInfo) hashOps.get(skuStr);
             if (redisCartInfo.getSkuNum() + skuNum >= 0) {
                 redisCartInfo.setSkuNum(redisCartInfo.getSkuNum() + skuNum);
             }
@@ -71,7 +73,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             //添加的商品需要进行勾选
             redisCartInfo.setIsChecked(1);
             //提交
-            hashOps.put(skuId.toString(), redisCartInfo);
+            hashOps.put(skuStr, redisCartInfo);
         }
         //更新过期时间
         redisTemplate.expire(getUserCartKey(oneOfUserId), RedisConst.USER_CART_EXPIRE, TimeUnit.SECONDS);
@@ -104,7 +106,7 @@ public class CartInfoServiceImpl extends ServiceImpl<CartInfoMapper, CartInfo> i
             BoundHashOperations hashOps = getRedisHashOps(userId);
             Set keys = hashOps.keys();
             if (!CollectionUtils.isEmpty(keys)) {
-                return (List<CartInfo>)hashOps.values();
+                return (List<CartInfo>) hashOps.values();
             }
         }
 

@@ -1,6 +1,7 @@
 package com.atguigu.service;
 
 import com.atguigu.entity.PaymentInfo;
+import com.atguigu.enums.PaymentStatus;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.Map;
@@ -24,4 +25,6 @@ public interface PaymentInfoService extends IService<PaymentInfo> {
     Boolean queryAlipayTrade(Long orderId);
 
     Boolean closeAlipayTrade(Long orderId);
+
+    void updatePaymentStatus(String outTradeNo, PaymentStatus clOSED);
 }

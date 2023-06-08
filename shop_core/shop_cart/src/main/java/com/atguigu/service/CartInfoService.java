@@ -24,4 +24,5 @@ public interface CartInfoService extends IService<CartInfo> {
     void deleteCart(Long skuId, String oneOfUserId);
 
     List<CartInfo> getSelectedCartInfo(String userId);
+
 }

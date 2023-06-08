@@ -34,6 +34,7 @@ public class CartInfoController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    //商品新增到购物车
     @GetMapping("/addCart/{skuId}/{skuNum}")
     public void addCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request) {
         String oneOfUserId = AuthContextHolder.getUserId(request);
@@ -43,6 +44,7 @@ public class CartInfoController {
         cartInfoService.addCart(skuId, skuNum, oneOfUserId);
     }
 
+    //修改商品数量
     @PostMapping("/addToCart/{skuId}/{skuNum}")
     public RetVal addToCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request) {
         String oneOfUserId = AuthContextHolder.getUserId(request);

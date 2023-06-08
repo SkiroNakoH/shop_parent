@@ -202,6 +202,16 @@ public class PaymentInfoServiceImpl extends ServiceImpl<PaymentInfoMapper, Payme
         }
     }
 
+    //修改订单状态
+    @Override
+    public void updatePaymentStatus(String outTradeNo, PaymentStatus paymentStatus) {
+        PaymentInfo paymentInfo = getPaymentInfoByOutTradeNo(outTradeNo);
+        if(paymentInfo != null){
+            paymentInfo.setPaymentStatus(paymentStatus.name());
+            updateById(paymentInfo);
+        }
+    }
+
     private String getOutTradeNo(Long orderId) {
         OrderInfo orderInfo = orderFeignClient.getOrderInfoAndOrderDetail(orderId);
         if (orderInfo == null)

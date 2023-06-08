@@ -5,6 +5,7 @@ import com.atguigu.constant.MqConst;
 import com.atguigu.entity.OrderInfo;
 import com.atguigu.enums.OrderStatus;
 import com.atguigu.enums.ProcessStatus;
+import com.atguigu.feign.PaymentFeignClient;
 import com.atguigu.service.OrderInfoService;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
@@ -14,6 +15,7 @@ import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,10 @@ import java.util.Map;
 public class OrderConsumer {
     @Autowired
     private OrderInfoService orderInfoService;
+    @Autowired
+    private PaymentFeignClient paymentFeignClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     //超时未支付，取消订单
     @SneakyThrows
@@ -35,9 +41,12 @@ public class OrderConsumer {
                 orderInfo.setProcessStatus(ProcessStatus.CLOSED.name());
 
                 orderInfoService.updateById(orderInfo);
+                //支付表状态改为关闭，
+                rabbitTemplate.convertAndSend(MqConst.CLOSE_PAYMENT_EXCHANGE,MqConst.CLOSE_PAYMENT_ROUTE_KEY,orderInfo.getOutTradeNo());
 
-                //todo 支付表状态改为关闭，
-                //todo  如果支付宝里有交易记录，通知支付宝关闭此交易
+                //如果支付宝里有交易记录，通知支付宝关闭此交易
+                if(paymentFeignClient.queryAlipayTrade(orderId))
+                    paymentFeignClient.closeAlipayTrade(orderId);
             }
         }
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
@@ -49,16 +58,15 @@ public class OrderConsumer {
             exchange = @Exchange(value = MqConst.PAY_ORDER_EXCHANGE, durable = "false"),
             key = {MqConst.PAY_ORDER_ROUTE_KEY}))
     public void updateOrderFromPayment(Long orderId, Channel channel, Message message) {
+
         if (orderId != null) {
             OrderInfo orderInfo = orderInfoService.getOrderInfoAndOrderDetail(orderId);
             if (orderInfo != null && OrderStatus.UNPAID.name().equals(orderInfo.getOrderStatus())) {
-
                 //修改订单状态
-                orderInfoService.updateOrderStatus(orderInfo,ProcessStatus.PAID);
+                orderInfoService.updateOrderStatus(orderInfo, ProcessStatus.PAID);
 
                 // 通知仓库系统，修改商品库存
                 orderInfoService.sendOrderInfo2Ware4UpdateStock(orderInfo);
-
             }
         }
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
@@ -79,10 +87,10 @@ public class OrderConsumer {
         String status = (String) map.get("status");
         OrderInfo orderInfo = orderInfoService.getOrderInfoAndOrderDetail(orderId);
         //更改库存状态
-        if("DEDUCTED".equals(status)){
-           orderInfoService.updateOrderStatus(orderInfo,ProcessStatus.WAITING_DELEVER);
-        }else {
-           orderInfoService.updateOrderStatus(orderInfo,ProcessStatus.STOCK_EXCEPTION);
+        if ("DEDUCTED".equals(status)) {
+            orderInfoService.updateOrderStatus(orderInfo, ProcessStatus.WAITING_DELEVER);
+        } else {
+            orderInfoService.updateOrderStatus(orderInfo, ProcessStatus.STOCK_EXCEPTION);
         }
 
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
