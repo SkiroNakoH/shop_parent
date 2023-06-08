@@ -3,6 +3,8 @@ package com.atguigu.service;
 import com.atguigu.entity.SeckillProduct;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -13,4 +15,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface SeckillProductService extends IService<SeckillProduct> {
 
+    List<SeckillProduct> querySeckill();
 }
