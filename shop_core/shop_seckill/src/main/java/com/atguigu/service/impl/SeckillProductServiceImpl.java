@@ -33,7 +33,7 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
     Map<Long, SeckillProduct> cacheMap = new ConcurrentHashMap<>();
 
     @Override
-    public List<SeckillProduct> querySeckill() {
+    public List<SeckillProduct> queryAllSeckill() {
         //一级缓存有值
         if (cacheMap.size() > 0) {
             return cacheMap.entrySet().stream()
@@ -56,6 +56,20 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
             }
 
             return seckillProductList;
+        }
+        return null;
+    }
+
+    @Override
+    public SeckillProduct querySecKillBySkuId(Long skuId) {
+        //查看一级缓存
+        if(cacheMap.containsKey(skuId))
+            return cacheMap.get(skuId);
+        
+        //查看缓存
+        Boolean flag = redisTemplate.boundHashOps(RedisConst.SECKILL_PRODUCT).hasKey(skuId.toString());
+        if (flag) {
+            return (SeckillProduct) redisTemplate.boundHashOps(RedisConst.SECKILL_PRODUCT).get(skuId.toString());
         }
         return null;
     }

@@ -5,6 +5,7 @@ import com.atguigu.entity.SeckillProduct;
 import com.atguigu.service.SeckillProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -25,9 +26,15 @@ public class SeckillProductController {
     @Autowired
     private SeckillProductService seckillProductService;
 
-    @GetMapping("/querySeckill")
-    public List<SeckillProduct> querySeckill(){
-        return seckillProductService.querySeckill();
+    @GetMapping("/queryAllSeckill")
+    public List<SeckillProduct> queryAllSeckill(){
+        return seckillProductService.queryAllSeckill();
+    }
+
+    @GetMapping("/{skuId}")
+    public SeckillProduct querySecKillBySkuId(@PathVariable Long skuId){
+
+        return seckillProductService.querySecKillBySkuId(skuId);
     }
 
 }

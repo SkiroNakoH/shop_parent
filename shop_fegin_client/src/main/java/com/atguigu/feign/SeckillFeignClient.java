@@ -9,6 +9,9 @@ import java.util.List;
 
 @FeignClient("shop-seckill")
 public interface SeckillFeignClient {
-    @GetMapping("/seckill/querySeckill")
-    public List<SeckillProduct> querySeckill();
+    @GetMapping("/seckill/queryAllSeckill")
+    public List<SeckillProduct> queryAllSeckill();
+
+    @GetMapping("/seckill/{skuId}")
+    public SeckillProduct querySecKillBySkuId(@PathVariable Long skuId);
 }

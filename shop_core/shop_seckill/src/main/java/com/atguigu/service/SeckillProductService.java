@@ -15,5 +15,7 @@ import java.util.List;
  */
 public interface SeckillProductService extends IService<SeckillProduct> {
 
-    List<SeckillProduct> querySeckill();
+    List<SeckillProduct> queryAllSeckill();
+
+    SeckillProduct querySecKillBySkuId(Long skuId);
 }
