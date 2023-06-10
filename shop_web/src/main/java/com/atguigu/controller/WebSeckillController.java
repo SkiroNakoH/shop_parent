@@ -39,4 +39,12 @@ public class WebSeckillController {
         model.addAttribute("item",seckillProduct);
         return "seckill/detail";
     }
+
+    @RequestMapping("/seckill-queue.html")
+    public String seckillQueue(Long skuId,String seckillCode,Model model) {
+        model.addAttribute("skuId",skuId);
+        model.addAttribute("seckillCode",seckillCode);
+
+        return "seckill/queue";
+    }
 }

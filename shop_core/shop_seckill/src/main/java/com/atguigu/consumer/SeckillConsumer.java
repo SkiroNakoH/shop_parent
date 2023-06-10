@@ -3,9 +3,13 @@ package com.atguigu.consumer;
 import com.atguigu.constant.MqConst;
 import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.SeckillProduct;
+import com.atguigu.entity.UserSeckillSkuInfo;
 import com.atguigu.service.SeckillProductService;
 import com.atguigu.utils.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.rabbitmq.client.Channel;
+import lombok.SneakyThrows;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -27,10 +31,10 @@ public class SeckillConsumer {
 
     //接收扫描秒杀商品，并上架
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = MqConst.SCAN_SECKILL_QUEUE, durable = "false"),
-            exchange = @Exchange(MqConst.SCAN_SECKILL_EXCHANGE),
+            exchange = @Exchange(value = MqConst.SCAN_SECKILL_EXCHANGE, durable = "false"),
             key = MqConst.SCAN_SECKILL_ROUTE_KEY))
     public void sendMSG2ScanSeckill() {
-        //todo 接收扫描秒杀商品，并上架
+        //接收扫描秒杀商品，并上架
         /* 1. 扫描出当天应上架的商品
                 状态： 能上架
                 数量: >0
@@ -54,11 +58,20 @@ public class SeckillConsumer {
             for (Integer i = 0; i < seckillProduct.getNum(); i++) {
                 redisTemplate.boundListOps(RedisConst.SECKILL_STOCK_PREFIX + skuId).leftPush(skuId);
             }
-
             //4. 当商品上架时，通知其他redis节点可以秒杀了，改变秒杀状态
             redisTemplate.convertAndSend(RedisConst.PREPARE_PUB_SUB_SECKILL, skuId + ":" + RedisConst.CAN_SECKILL);
-
         }
+    }
 
+    //预下单
+    @SneakyThrows
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = MqConst.PREPARE_SECKILL_QUEUE, durable = "false"),
+            exchange = @Exchange(value = MqConst.PREPARE_SECKILL_EXCHANGE, durable = "false"),
+            key = MqConst.PREPARE_SECKILL_ROUTE_KEY))
+    public void prepareSeckillOrder(UserSeckillSkuInfo userSeckillSkuInfo, Channel channel, Message message) {
+        if (userSeckillSkuInfo != null) {
+            seckillProductService.prepareSeckillOrder(userSeckillSkuInfo);
+        }
+        channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
     }
 }
