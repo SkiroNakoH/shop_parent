@@ -7,7 +7,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.112.128:8848
+        server-addr: 192.168.21.128:8848
   thymeleaf:
     mode: LEGACYHTML5
     #编码 可不用配置

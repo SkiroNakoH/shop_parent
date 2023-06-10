@@ -50,5 +50,12 @@ public class SeckillProductController {
         return seckillProductService.prepareSeckill(skuId,seckillCode,request);
     }
 
+    // http://api.gmall.com/seckill/hasQualified/33
+    @GetMapping("/hasQualified/{skuId}")
+    public RetVal hasQualified(@PathVariable Long skuId,HttpServletRequest request){
+
+        return seckillProductService.hasQualified(skuId,request);
+    }
+
 }
 

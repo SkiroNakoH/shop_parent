@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileUploader {
     /*
-     * http://192.168.112.128:9000
+     * http://192.168.21.128:9000
      * enjoy6288
      * godhand
      * C:\Users\SkiroNako\Desktop\naxida.jpg
@@ -20,7 +20,7 @@ public class FileUploader {
             throws IOException, NoSuchAlgorithmException, InvalidKeyException {
         try {
             // 使用MinIO服务的URL，端口，Access key和Secret key创建一个MinioClient对象
-            MinioClient minioClient = new MinioClient("http://192.168.112.128:9000", "enjoy6288", "enjoy6288");
+            MinioClient minioClient = new MinioClient("http://192.168.21.128:9000", "enjoy6288", "enjoy6288");
             // 检查存储桶是否已经存在
             boolean isExist = minioClient.bucketExists("godhand");
             if (isExist) {
