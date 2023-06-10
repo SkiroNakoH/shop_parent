@@ -72,6 +72,6 @@ public class SeckillConsumer {
         if (userSeckillSkuInfo != null) {
             seckillProductService.prepareSeckillOrder(userSeckillSkuInfo);
         }
-        channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+
     }
 }

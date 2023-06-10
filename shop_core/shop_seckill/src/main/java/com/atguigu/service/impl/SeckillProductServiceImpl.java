@@ -13,6 +13,7 @@ import com.atguigu.util.MD5;
 import com.atguigu.util.UserIdUtil;
 import com.atguigu.utils.DateUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,10 +135,7 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
         }
 
         //有此商品，且可以秒杀    mq预下单
-        UserSeckillSkuInfo userSeckillSkuInfo = new UserSeckillSkuInfo();
-        userSeckillSkuInfo.setUserId(userId);
-        userSeckillSkuInfo.setSkuId(skuId);
-        rabbitTemplate.convertAndSend(MqConst.PREPARE_SECKILL_EXCHANGE, MqConst.PREPARE_SECKILL_ROUTE_KEY, userSeckillSkuInfo);
+        mqPrepareSeckill(skuId, userId);
 
         return RetVal.ok();
     }
@@ -181,6 +179,41 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
 
         //更新秒杀库存量
         updateSecKillStockCount(skuId);
+    }
+
+    //判断是否具备抢购资格
+    @Override
+    public RetVal hasQualified(Long skuId, HttpServletRequest request) {
+        String userId = UserIdUtil.getUserId(request, redisTemplate);
+
+        //查看是否存在skuId和userId对应关系
+        Boolean flag = redisTemplate.hasKey(RedisConst.PREPARE_SECKILL_USERID_SKUID + ":" + userId + ":" + skuId);
+        if (flag) {
+            //拿出订单
+            PrepareSeckillOrder prepareSeckillOrder = (PrepareSeckillOrder) redisTemplate.boundHashOps(RedisConst.PREPARE_SECKILL_USERID_ORDER).get(userId);
+            if (prepareSeckillOrder != null) {
+                return RetVal.build(prepareSeckillOrder, RetValCodeEnum.PREPARE_SECKILL_SUCCESS);
+            }
+        }
+        //判断是否真正下过单
+        Integer orderId = (Integer) redisTemplate.boundHashOps(RedisConst.BOUGHT_SECKILL_USER_ORDER).get(userId);
+        //用户已经购买过此商品
+        if (orderId != null)
+            return RetVal.build(orderId, RetValCodeEnum.PREPARE_SECKILL_SUCCESS);
+
+        //不具备抢购资格，继续排队
+        //通知尝试重新下单
+        //有此商品，且可以秒杀    mq预下单
+        mqPrepareSeckill(skuId, userId);
+        return RetVal.build(null, RetValCodeEnum.SECKILL_RUN);
+    }
+
+    //mq预下单
+    private void mqPrepareSeckill(Long skuId, String userId) {
+        UserSeckillSkuInfo userSeckillSkuInfo = new UserSeckillSkuInfo();
+        userSeckillSkuInfo.setUserId(userId);
+        userSeckillSkuInfo.setSkuId(skuId);
+        rabbitTemplate.convertAndSend(MqConst.PREPARE_SECKILL_EXCHANGE, MqConst.PREPARE_SECKILL_ROUTE_KEY, userSeckillSkuInfo);
     }
 
     private void updateSecKillStockCount(Long skuId) {
