@@ -33,7 +33,7 @@ public class SeckillConsumer {
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = MqConst.SCAN_SECKILL_QUEUE, durable = "false"),
             exchange = @Exchange(value = MqConst.SCAN_SECKILL_EXCHANGE, durable = "false"),
             key = MqConst.SCAN_SECKILL_ROUTE_KEY))
-    public void sendMSG2ScanSeckill() {
+    public void scanSeckill() {
         //接收扫描秒杀商品，并上架
         /* 1. 扫描出当天应上架的商品
                 状态： 能上架
@@ -74,4 +74,36 @@ public class SeckillConsumer {
         }
 
     }
+
+    //接收扫描秒杀商品，并上架
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = MqConst.CLEAR_REDIS_QUEUE,durable = "false"),
+            exchange = @Exchange(value = MqConst.CLEAR_REDIS_EXCHANGE,durable = "false",autoDelete = "true"),
+            key = {MqConst.CLEAR_REDIS_ROUTE_KEY}
+    ))
+    public void clearRedis(Message message, Channel channel) throws Exception{
+        QueryWrapper<SeckillProduct> wrapper = new QueryWrapper<>();
+        //1为秒杀商品
+        wrapper.eq("status",1);
+        wrapper.le("end_time",new Date());
+        //获取到秒杀结束之后的商品数据
+        List<SeckillProduct> seckillProductList = seckillProductService.list(wrapper);
+        for (SeckillProduct seckillProduct : seckillProductList) {
+            //删除库存数
+            redisTemplate.delete(RedisConst.SECKILL_STOCK_PREFIX + seckillProduct.getSkuId());
+        }
+        //删除秒杀商品信息
+        redisTemplate.delete(RedisConst.SECKILL_PRODUCT);
+        //删除用户抢得预售订单
+        redisTemplate.delete(RedisConst.PREPARE_SECKILL_USERID_ORDER);
+        // 删除用户秒杀最终抢到的订单
+        redisTemplate.delete(RedisConst.BOUGHT_SECKILL_USER_ORDER);
+        // 更新数据 更新状态 1 表示秒杀开始，2 表示秒杀结束
+        SeckillProduct seckillProduct = new SeckillProduct();
+        seckillProduct.setStatus("2");
+        seckillProductService.update(seckillProduct,wrapper);
+        // 消息确认
+        channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+    }
+
 }
