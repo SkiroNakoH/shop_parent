@@ -136,5 +136,11 @@ public class OrderInfoController {
         return orderInfoService.splitOrder(map);
     }
 
+    @PostMapping("/saveOrderAndDetail")
+    public Long saveOrderAndDetail(@RequestBody OrderInfo orderInfo) {
+        orderInfoService.saveOrderInfo(orderInfo, orderInfo.getUserId() + "");
+        return orderInfo.getId();
+    }
+
 }
 

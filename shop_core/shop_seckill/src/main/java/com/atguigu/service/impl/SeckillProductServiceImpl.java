@@ -3,6 +3,7 @@ package com.atguigu.service.impl;
 import com.atguigu.constant.MqConst;
 import com.atguigu.constant.RedisConst;
 import com.atguigu.entity.*;
+import com.atguigu.feign.OrderFeignClient;
 import com.atguigu.feign.UserFeignClient;
 import com.atguigu.mapper.SeckillProductMapper;
 import com.atguigu.result.RetVal;
@@ -43,6 +44,8 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
     private RabbitTemplate rabbitTemplate;
     @Autowired
     private UserFeignClient userFeignClient;
+    @Autowired
+    private OrderFeignClient orderFeignClient;
 
     //创建一级缓存
     Map<Long, SeckillProduct> cacheMap = new ConcurrentHashMap<>();
@@ -245,6 +248,32 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
         return RetVal.ok(map);
     }
 
+    @Override
+    public RetVal submitSecKillOrder(OrderInfo orderInfo, HttpServletRequest request) {
+        String userId = UserIdUtil.getUserId(request, redisTemplate);
+        if (userId == null)
+            userId = AuthContextHolder.getUserId(request);
+
+        //尝试获取redis中的临时订单信息，来判断用户是否真正具有下单的资格
+        PrepareSeckillOrder prepareSeckillOrder = (PrepareSeckillOrder) redisTemplate.boundHashOps(RedisConst.PREPARE_SECKILL_USERID_ORDER).get(userId);
+        if (prepareSeckillOrder == null)
+            return RetVal.fail().message("非法请求");
+
+        orderInfo.setUserId(Long.valueOf(userId));
+        //通过openfeign远程下单，返回下单的orderId
+        Long orderId = orderFeignClient.saveOrderAndDetail(orderInfo);
+        if(orderId == null)
+            return RetVal.fail().message("下单失败");
+
+        //删除存入redis中的临时订单信息
+        redisTemplate.boundHashOps(RedisConst.PREPARE_SECKILL_USERID_ORDER).delete(userId);
+
+        //将用户id和订单id的关系保存进redis中，以做用户点击秒杀商品按钮时，判断用户是否已经购买过此商品
+        redisTemplate.boundHashOps(RedisConst.BOUGHT_SECKILL_USER_ORDER).put(userId,orderId);
+
+        return RetVal.ok(orderId);
+    }
+
     //mq预下单
     private void mqPrepareSeckill(Long skuId, String userId) {
         UserSeckillSkuInfo userSeckillSkuInfo = new UserSeckillSkuInfo();
@@ -270,5 +299,5 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
             updateById(seckillProduct);
     }
 
-    //todo 判断是否具有抢购资格
+
 }

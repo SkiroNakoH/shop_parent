@@ -1,5 +1,6 @@
 package com.atguigu.service;
 
+import com.atguigu.entity.OrderInfo;
 import com.atguigu.entity.SeckillProduct;
 import com.atguigu.entity.UserSeckillSkuInfo;
 import com.atguigu.result.RetVal;
@@ -31,4 +32,6 @@ public interface SeckillProductService extends IService<SeckillProduct> {
     RetVal hasQualified(Long skuId, HttpServletRequest request);
 
     RetVal confirmSeckill(HttpServletRequest request);
+
+    RetVal submitSecKillOrder(OrderInfo orderInfo, HttpServletRequest request);
 }

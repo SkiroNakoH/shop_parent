@@ -1,6 +1,7 @@
 package com.atguigu.controller;
 
 
+import com.atguigu.entity.OrderInfo;
 import com.atguigu.entity.SeckillProduct;
 import com.atguigu.result.RetVal;
 import com.atguigu.service.SeckillProductService;
@@ -61,6 +62,12 @@ public class SeckillProductController {
     public RetVal confirmSeckill(HttpServletRequest request){
 
         return seckillProductService.confirmSeckill(request);
+    }
+
+    //提交订单  http://api.gmall.com/seckill/submitSecKillOrder
+    @PostMapping("/submitSecKillOrder")
+    public RetVal submitSecKillOrder(@RequestBody OrderInfo orderInfo,HttpServletRequest request){
+        return  seckillProductService.submitSecKillOrder(orderInfo,request);
     }
 
 }
