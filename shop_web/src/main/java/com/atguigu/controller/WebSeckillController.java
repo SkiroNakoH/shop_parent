@@ -4,6 +4,7 @@ import com.atguigu.entity.SeckillProduct;
 import com.atguigu.feign.CartFeignClient;
 import com.atguigu.feign.SeckillFeignClient;
 import com.atguigu.feign.SkuDetailFeignClient;
+import com.atguigu.result.RetVal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +12,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class WebSeckillController {
@@ -43,5 +46,15 @@ public class WebSeckillController {
         model.addAttribute("seckillCode",seckillCode);
 
         return "seckill/queue";
+    }
+
+    @RequestMapping("/seckill-confirm.html")
+    public String seckillConfirm(Model model) {
+        RetVal retVal = seckillFeignClient.confirmSeckill();
+        if(!retVal.isOk()){
+            model.addAttribute("message",retVal.getMessage());
+        }
+        model.addAllAttributes((Map<String, ?>) retVal.getData());
+        return "seckill/confirm";
     }
 }

@@ -2,13 +2,14 @@ package com.atguigu.service.impl;
 
 import com.atguigu.constant.MqConst;
 import com.atguigu.constant.RedisConst;
-import com.atguigu.entity.PrepareSeckillOrder;
-import com.atguigu.entity.SeckillProduct;
-import com.atguigu.entity.UserSeckillSkuInfo;
+import com.atguigu.entity.*;
+import com.atguigu.feign.UserFeignClient;
 import com.atguigu.mapper.SeckillProductMapper;
 import com.atguigu.result.RetVal;
 import com.atguigu.result.RetValCodeEnum;
 import com.atguigu.service.SeckillProductService;
+import com.atguigu.util.AuthContextHolder;
+import com.atguigu.util.HttpClientUtil;
 import com.atguigu.util.MD5;
 import com.atguigu.util.UserIdUtil;
 import com.atguigu.utils.DateUtil;
@@ -40,6 +41,8 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
     private RedisTemplate redisTemplate;
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private UserFeignClient userFeignClient;
 
     //创建一级缓存
     Map<Long, SeckillProduct> cacheMap = new ConcurrentHashMap<>();
@@ -205,6 +208,41 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
         // mq尝试预下单
         mqPrepareSeckill(skuId, userId);
         return RetVal.build(null, RetValCodeEnum.SECKILL_RUN);
+    }
+
+    @Override
+    public RetVal confirmSeckill(HttpServletRequest request) {
+        String userId = UserIdUtil.getUserId(request, redisTemplate);
+        if (userId == null)
+            userId = AuthContextHolder.getUserId(request);
+
+        //获取收获人地址
+        List<UserAddress> userAddressList = userFeignClient.getUserAddressByUserId(userId);
+        //从redis中获取订单信息，转换为订单
+        PrepareSeckillOrder prepareSeckillOrder = (PrepareSeckillOrder) redisTemplate.boundHashOps(RedisConst.PREPARE_SECKILL_USERID_ORDER).get(userId);
+        if (prepareSeckillOrder == null)
+            return RetVal.fail().message("非法请求");
+
+        SeckillProduct seckillProduct = prepareSeckillOrder.getSeckillProduct();
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setSkuId(seckillProduct.getSkuId());
+        orderDetail.setSkuName(seckillProduct.getSkuName());
+        orderDetail.setImgUrl(seckillProduct.getSkuDefaultImg());
+        orderDetail.setSkuNum(prepareSeckillOrder.getBuyNum() + "");
+        //订单的价格 可以拿实时价格 也可以拿购物车里面的价格
+        orderDetail.setOrderPrice(seckillProduct.getCostPrice());
+
+        ArrayList<OrderDetail> orderDetailList = new ArrayList<>();
+        orderDetailList.add(orderDetail);
+
+        //将收货人地址，订单列表，花费价格放入map，使用retval返回
+        Map<String, Object> map = new HashMap<>();
+        map.put("userAddressList", userAddressList);
+        map.put("orderDetailList", orderDetailList);
+        map.put("totalNum", prepareSeckillOrder.getBuyNum());
+        map.put("totalMoney", seckillProduct.getCostPrice());
+
+        return RetVal.ok(map);
     }
 
     //mq预下单

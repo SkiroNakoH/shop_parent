@@ -29,4 +29,6 @@ public interface SeckillProductService extends IService<SeckillProduct> {
     void prepareSeckillOrder(UserSeckillSkuInfo userSeckillSkuInfo);
 
     RetVal hasQualified(Long skuId, HttpServletRequest request);
+
+    RetVal confirmSeckill(HttpServletRequest request);
 }

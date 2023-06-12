@@ -57,5 +57,11 @@ public class SeckillProductController {
         return seckillProductService.hasQualified(skuId,request);
     }
 
+    @GetMapping("/seckillConfirm")
+    public RetVal confirmSeckill(HttpServletRequest request){
+
+        return seckillProductService.confirmSeckill(request);
+    }
+
 }
 

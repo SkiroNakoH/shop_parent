@@ -1,6 +1,7 @@
 package com.atguigu.feign;
 
 import com.atguigu.entity.SeckillProduct;
+import com.atguigu.result.RetVal;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,4 +15,7 @@ public interface SeckillFeignClient {
 
     @GetMapping("/seckill/{skuId}")
     public SeckillProduct querySecKillBySkuId(@PathVariable Long skuId);
+
+    @GetMapping("/seckill/seckillConfirm")
+    public RetVal confirmSeckill();
 }
