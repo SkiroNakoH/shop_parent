@@ -1,0 +1,15 @@
+server:
+  port: 8007
+spring:
+  application:
+    name: shop_quartz
+
+  rabbitmq:
+    host: 192.168.21.128
+    port: 5672
+    username: admin
+    password: 123
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.21.128:8848
