@@ -13,7 +13,6 @@ import com.atguigu.util.MD5;
 import com.atguigu.util.UserIdUtil;
 import com.atguigu.utils.DateUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -234,6 +233,4 @@ public class SeckillProductServiceImpl extends ServiceImpl<SeckillProductMapper,
     }
 
     //todo 判断是否具有抢购资格
-
-
 }
