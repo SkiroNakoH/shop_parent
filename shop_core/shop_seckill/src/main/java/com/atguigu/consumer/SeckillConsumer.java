@@ -75,7 +75,7 @@ public class SeckillConsumer {
 
     }
 
-    //接收扫描秒杀商品，并上架
+    //清理过期的秒杀商品
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = MqConst.CLEAR_REDIS_QUEUE,durable = "false"),
             exchange = @Exchange(value = MqConst.CLEAR_REDIS_EXCHANGE,durable = "false",autoDelete = "true"),
